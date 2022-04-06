@@ -1,5 +1,7 @@
 # Portal
 
+pip3 install psycopg2-binary
+
 source venv/bin/activate 
 python3 manage.py runserver
 
