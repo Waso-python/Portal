@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+from .my_set import DB_NAME, HOST_DB, PORT_DB, USER_DB, PASSWORD_DB
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -90,11 +90,11 @@ WSGI_APPLICATION = 'mainportal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'PORTAL',
-        'USER' : 'postgres',
-        'PASSWORD' : '23edc$RF',
-        'HOST' : 'ksgulk.keenetic.pro',
-        'PORT' : '9276',
+        'NAME': DB_NAME,
+        'USER' : USER_DB,
+        'PASSWORD' : PASSWORD_DB,
+        'HOST' : HOST_DB,
+        'PORT' : PORT_DB,
     }
 }
 

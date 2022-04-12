@@ -1,3 +1,4 @@
+from pyexpat import model
 from random import choices
 from statistics import mode
 from django.db import models
@@ -13,6 +14,7 @@ class Order(models.Model):
     partner = models.CharField(max_length=512, null=False)
     summ_proc = models.IntegerField(null=False)
     count_order = models.IntegerField(null=False)
+
     subj_proc = models.CharField(max_length=512)
     actual_for_me = models.IntegerField(choices = ACTUAL_ANSWER)
     end_date = models.DateTimeField()
@@ -141,6 +143,29 @@ class PortalGroups(models.Model):
     class Meta:
         db_table = 'portal_groups'
 
+class RawData(models.Model):
+    num_proc = models.CharField(max_length=128)
+    link_proc = models.CharField(max_length=500)
+    status = models.CharField(max_length=128)
+    type_proc = models.CharField(max_length=128)
+    partner = models.CharField(max_length=512)
+    partner_inn = models.CharField(max_length=512)
+    summ_proc = models.CharField(max_length=20)
+    count_order = models.CharField(max_length=5)
+    region = models.CharField(max_length=128)
+    law_proc = models.CharField(max_length=128)
+    subj_proc = models.CharField(max_length=512)
+    complete = models.IntegerField(default=0)
+    start_date = models.CharField(max_length=50)
+    end_date = models.CharField(max_length=50)
+    proc_comment = models.CharField(max_length=256)
+
+    def __str__(self) -> str:
+        return f'{self.id} - {self.num_proc} - {self.complete}'
+    class Meta:
+        managed = True
+        db_table = 'raw_table'
+
 
 class IndexpageOrder(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -220,6 +245,11 @@ class Peoples(models.Model):
     class Meta:
         db_table = 'peoples'
 
+class Region(models.Model):
+    full_name = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return f'{self.id} - {self.full_name}'
 
 class Procedures(models.Model):
     places = models.ForeignKey(Marketplaces, models.DO_NOTHING, blank=True, null=True)
@@ -235,6 +265,8 @@ class Procedures(models.Model):
     stage = models.ForeignKey('Stages', models.DO_NOTHING, db_column='stage')
     link =  models.CharField(max_length=512)
     created_at = models.DateTimeField(blank=True, null=True)
+    deal_count = models.IntegerField()
+    region = models.ForeignKey('Region', models.DO_NOTHING, blank=True, null=True)
 
     def __str__(self) -> str:
         return f'{self.id} - {self.proc_number} - {self.subject}'
