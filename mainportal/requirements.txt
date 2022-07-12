@@ -1,5 +1,4 @@
 asgiref==3.5.0
-backports.zoneinfo==0.2.1
 beautifulsoup4==4.10.0
 Django==4.0.2
 django-bootstrap-v5==1.0.11

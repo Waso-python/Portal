@@ -2,6 +2,8 @@ from pyexpat import model
 from random import choices
 from statistics import mode
 from django.db import models
+import datetime
+import hashlib
 
 # Create your models here.
 class Order(models.Model):
@@ -159,9 +161,17 @@ class RawData(models.Model):
     start_date = models.CharField(max_length=50)
     end_date = models.CharField(max_length=50)
     proc_comment = models.CharField(max_length=256)
+    inserted_at = models.DateTimeField(default=datetime.datetime.now)
 
     def __str__(self) -> str:
         return f'{self.id} - {self.num_proc} - {self.complete}'
+
+    def check_hash(self):
+        return hashlib.sha224((self.link_proc + self.status + self.type_proc + self.partner 
+                    + self.partner_inn + self.summ_proc + self.count_order + self.region 
+                    + self.law_proc + self.subj_proc + self.start_date + self.end_date 
+                    + self.proc_comment).encode('utf-8') ).hexdigest()
+
     class Meta:
         managed = True
         db_table = 'raw_table'
@@ -264,9 +274,10 @@ class Procedures(models.Model):
     tradeplace = models.ForeignKey('Tradeplaces', models.DO_NOTHING, db_column='tradeplace')
     stage = models.ForeignKey('Stages', models.DO_NOTHING, db_column='stage')
     link =  models.CharField(max_length=512)
-    created_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True)
     deal_count = models.IntegerField()
     region = models.ForeignKey('Region', models.DO_NOTHING, blank=True, null=True)
+    hash = models.CharField(max_length=200, null=True)
 
     def __str__(self) -> str:
         return f'{self.id} - {self.proc_number} - {self.subject}'
