@@ -1,3 +1,4 @@
+from curses import raw
 from django.http import QueryDict
 from django.shortcuts import render, HttpResponse
 from django.views.generic import View, TemplateView
@@ -5,6 +6,7 @@ from .models import *
 from datetime import datetime
 import pytz
 import time
+from asgiref.sync import sync_to_async, async_to_sync
 
 # def index_page(request):
 #     return render(request, 'indexpage/index.html')
@@ -17,28 +19,30 @@ class IndexPageView(TemplateView):
         context.update({'key':'value'}) #content to send to template
         return context
 
-def get_obj(model, value):
-    try:
-        obj = model.objects.get(full_name=value)
-    except:
-        obj = model.objects.create(full_name=value)
-    return obj
+class UpdateBase(View):
+    template_name = 'indexpage/index.html'
 
-def get_org(partner):
-    org_inn = ''.join([i if i.isdigit() else '' for i in partner.split(':')[1]])
-    try:
-        obj = Orgs.objects.get(inn=org_inn)
-    except:
-        org_name = partner.split('(')[0]
-        obj = Orgs.objects.create(full_name=org_name, inn=org_inn)
-    return obj
+    def get(self, request):
+        async_to_sync(self.fillBase)()
+        return HttpResponse('<h1>UpdateBase</h1>')
 
+    def get_obj(self, model, value):
+        try:
+            obj = model.objects.get(full_name=value)
+        except:
+            obj = model.objects.create(full_name=value)
+        return obj
 
-def fillBase(request):
-    rawdata = RawData.objects.filter(complete=0)
-    lst = set([i.num_proc for i in rawdata])
-    # return HttpResponse(f"<h1>fillbase {len(lst)}</h1>")    
-    for i in lst:
+    def get_org(self, partner):
+        org_inn = ''.join([i if i.isdigit() else '' for i in partner.split(':')[1]])
+        try:
+            obj = Orgs.objects.get(inn=org_inn)
+        except:
+            org_name = partner.split('(')[0]
+            obj = Orgs.objects.create(full_name=org_name, inn=org_inn)
+        return obj
+
+    def create_update_entity(self, i):
         data_lst = RawData.objects.filter(num_proc=i).order_by('-pk')
         data = data_lst[0]
         data_hash = data.check_hash()
@@ -47,29 +51,49 @@ def fillBase(request):
         except:
             entity = Procedures()
         if (data_hash == entity.hash):
-            continue
-        start_time = time.time()
+            return
         entity.places=Marketplaces.objects.get(full_name='portal_providers')
         entity.proc_number=data.num_proc
-        entity.law=get_obj(Laws, data.law_proc)
-        entity.type_proc=get_obj(TypesProc, data.type_proc)
-        entity.orgs=get_org(data.partner) 
+        entity.law=self.get_obj(Laws, data.law_proc)
+        entity.type_proc=self.get_obj(TypesProc, data.type_proc)
+        entity.orgs=self.get_org(data.partner) 
         entity.subject=data.subj_proc
         entity.date_start=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
         entity.date_end=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
         entity.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
         entity.tradeplace=Tradeplaces.objects.get(full_name='portal_providers')
-        entity.stage=get_obj(Stages, data.status)
+        entity.stage=self.get_obj(Stages, data.status)
         entity.link=data.link_proc
         entity.deal_count=int(data.count_order) if data.count_order else 0
-        entity.region=get_obj(Region, data.region)
+        entity.region=self.get_obj(Region, data.region)
         entity.hash=data_hash
-        print("--- %s seconds ---" % (time.time() - start_time))
         entity.save()
-    rawdata.update(complete=1)
-    return HttpResponse(f"<h1>fillbase {len(lst)}</h1>")
-    
-# ['__and__', '__bool__', '__class__', '__class_getitem__', '__deepcopy__', '__delattr__', '__dict__', '__dir__', 
+        print(i , 'complete')
+
+    def get_rawdata(self, complete=False):
+        rawdata = RawData.objects.filter(complete=0)
+        type(rawdata)
+        if not complete:
+            return list(rawdata)
+        else:
+            rawdata.update(complete=1)
+
+    async def fillBase(self):
+        start_time = time.time()
+        get_rawdata_func = sync_to_async(self.get_rawdata, thread_sensitive=True)
+        rawdata = await get_rawdata_func()
+        lst = set([i.num_proc for i in rawdata])
+        create_update_entity_async = sync_to_async(self.create_update_entity, thread_sensitive=False)
+        for i in lst:
+            await create_update_entity_async(i)
+        await get_rawdata_func(True)
+        print("--- %s seconds ---" % (time.time() - start_time))
+        return len(lst)
+
+class Test(View):
+    def get(self, request):
+        return HttpResponse('<h1>Test</h1>')
+    # ['__and__', '__bool__', '__class__', '__class_getitem__', '__deepcopy__', '__delattr__', '__dict__', '__dir__', 
 # '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getstate__', '__gt__', '__hash__', 
 # '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__module__', '__ne__', '__new__', '__or__',
 #  '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__setstate__', '__sizeof__', '__str__', '__subclasshook__',
