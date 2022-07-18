@@ -1,0 +1,36 @@
+{% extends 'layout/layout.html' %}
+
+{% block head %}
+<title>shablon</title>
+{% endblock %}
+<!-- -------------------------------------------------------------------- -->
+{% block body_left %}
+
+{% endblock %}
+{% block body_right %}
+<h1>Show</h1>
+{% block content %}
+    <h2>Procedures</h2>
+    <ul>
+        {% for elem in object_list %}
+            <li>{{ elem.places }}</li>
+        	{{ elem.proc_number }}
+        	{{ elem.law }}
+        	{{ elem.type_proc }}
+        	{{ elem.orgs }}
+        	{{ elem.subject }}
+        	{{ elem.date_start }}
+        	{{ elem.date_end }}
+        	{{ elem.date_proc }}
+        	{{ elem.tradeplace }}
+        	{{ elem.stage }}
+        	{{ elem.link }}
+        	{{ elem.created_at }}
+        	{{ elem.deal_count }}
+        	{{ elem.region }}
+        	{{ elem.hash }}</li>
+			
+        {% endfor %}
+    </ul>
+{% endblock %}
+{% endblock %}

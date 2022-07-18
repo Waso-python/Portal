@@ -1,7 +1,7 @@
 from curses import raw
 from django.http import QueryDict
 from django.shortcuts import render, HttpResponse
-from django.views.generic import View, TemplateView
+from django.views.generic import View, TemplateView, ListView
 from .models import *
 from datetime import datetime
 import pytz
@@ -13,18 +13,23 @@ from asgiref.sync import sync_to_async, async_to_sync
 
 class IndexPageView(TemplateView):
     template_name = 'indexpage/index.html'
-    
+
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs) 
+        context = super().get_context_data(**kwargs)
         context.update({'key':'value'}) #content to send to template
         return context
 
 class UpdateBase(View):
-    template_name = 'indexpage/index.html'
+    template_name = 'indexpage/updatebase.html'
+
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.rawdata = None
 
     def get(self, request):
         async_to_sync(self.fillBase)()
-        return HttpResponse('<h1>UpdateBase</h1>')
+        return render(request, self.template_name)
 
     def get_obj(self, model, value):
         try:
@@ -71,12 +76,13 @@ class UpdateBase(View):
         print(i , 'complete')
 
     def get_rawdata(self, complete=False):
-        rawdata = RawData.objects.filter(complete=0)
-        type(rawdata)
+        if not self.rawdata:
+            self.rawdata = RawData.objects.filter(complete=0)
         if not complete:
-            return list(rawdata)
+            return list(self.rawdata)
         else:
-            rawdata.update(complete=1)
+            self.rawdata.update(complete=1)
+            del self.rawdata
 
     async def fillBase(self):
         start_time = time.time()
@@ -90,9 +96,10 @@ class UpdateBase(View):
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(lst)
 
-class Test(View):
-    def get(self, request):
-        return HttpResponse('<h1>Test</h1>')
+class PublisherListView(ListView):
+    template_name = 'indexpage/updatebase.html'
+    model = Procedures
+    queryset = Procedures.objects.order_by('-date_proc')[:100]
     # ['__and__', '__bool__', '__class__', '__class_getitem__', '__deepcopy__', '__delattr__', '__dict__', '__dir__', 
 # '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getstate__', '__gt__', '__hash__', 
 # '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__module__', '__ne__', '__new__', '__or__',

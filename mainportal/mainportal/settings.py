@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-from .my_set import DB_NAME, HOST_DB, PORT_DB, USER_DB, PASSWORD_DB
+from .my_set import DB_NAME, HOST_DB, PORT_DB, USER_DB, PASSWORD_DB, SECRET_KEY
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +25,7 @@ BOOTSTRAP5 = {
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-00+c!dl#^6ng+5+5$dw*4eb!ve0hoa#h1(e^acmd^%ogjuovi+'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
