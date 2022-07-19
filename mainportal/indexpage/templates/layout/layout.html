@@ -11,14 +11,22 @@
 		{% endblock %}
 	</head>
 	<body>
-		  <div>
-			{% block body_left %}
-		
-			{% endblock %}
-							
-			{% block body_right %}
-								
-			{% endblock %}
+		  <div class="container-fluid">
+			  <h1 class="display-3" style="background-color: #7c9880;">Portal</h1>
+			<div class="row">
+				<div class="col-md-2" style="background-color: #7c9880;">
+					<a href="{% url 'base' %}">Закупки</a><br>
+					<a href="{% url 'interesting' %}">Интересные</a><br>
+					<a href="{% url 'works' %}">В работе</a><br>
+					<a href="{% url 'completed' %}">Завершенные</a><br>
+					{% block body_left %}
+					{% endblock %}
+				</div>
+				<div class="col-md-9" style="background-color: #ffffff;">
+					{% block body_right %}					
+					{% endblock %}
+			</div>
+			</div>
 		  </div>
 	</body>
 </html>

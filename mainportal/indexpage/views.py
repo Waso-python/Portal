@@ -1,6 +1,4 @@
-from curses import raw
-from django.http import QueryDict
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import redirect, render, HttpResponse
 from django.views.generic import View, TemplateView, ListView
 from .models import *
 from datetime import datetime
@@ -96,11 +94,31 @@ class UpdateBase(View):
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(lst)
 
-class PublisherListView(ListView):
+class FullBase(ListView):
     template_name = 'indexpage/updatebase.html'
     model = Procedures
-    queryset = Procedures.objects.order_by('-date_proc')[:100]
-    # ['__and__', '__bool__', '__class__', '__class_getitem__', '__deepcopy__', '__delattr__', '__dict__', '__dir__', 
+    paginate_by = 10
+    queryset = Procedures.objects.order_by('-pk')
+
+class InterestingBase(ListView):
+    template_name = 'indexpage/updatebase.html'
+    model = Procedures
+    paginate_by = 10
+    queryset = Procedures.objects.filter(interesting=1).order_by('-pk') 
+
+def add_Interesting(request):
+    print(request.GET.get('next'))
+    pk = int(request.GET.get('pk'))
+    value = int(request.GET.get('value'))
+    Procedures.objects.filter(pk=pk).update(interesting=value)
+    return redirect(request.GET.get('next'))
+
+
+
+
+
+
+# ['__and__', '__bool__', '__class__', '__class_getitem__', '__deepcopy__', '__delattr__', '__dict__', '__dir__', 
 # '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getstate__', '__gt__', '__hash__', 
 # '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__module__', '__ne__', '__new__', '__or__',
 #  '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__setstate__', '__sizeof__', '__str__', '__subclasshook__',

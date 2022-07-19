@@ -278,6 +278,7 @@ class Procedures(models.Model):
     deal_count = models.IntegerField()
     region = models.ForeignKey('Region', models.DO_NOTHING, blank=True, null=True)
     hash = models.CharField(max_length=200, null=True)
+    interesting = models.SmallIntegerField(default=0)
 
     def __str__(self) -> str:
         return f'{self.id} - {self.proc_number} - {self.subject}'

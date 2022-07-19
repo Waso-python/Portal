@@ -1,36 +1,81 @@
 {% extends 'layout/layout.html' %}
 
 {% block head %}
-<title>shablon</title>
+<title>Base</title>
 {% endblock %}
 <!-- -------------------------------------------------------------------- -->
 {% block body_left %}
 
 {% endblock %}
 {% block body_right %}
-<h1>Show</h1>
-{% block content %}
-    <h2>Procedures</h2>
-    <ul>
-        {% for elem in object_list %}
-            <li>{{ elem.places }}</li>
-        	{{ elem.proc_number }}
-        	{{ elem.law }}
-        	{{ elem.type_proc }}
-        	{{ elem.orgs }}
-        	{{ elem.subject }}
-        	{{ elem.date_start }}
-        	{{ elem.date_end }}
-        	{{ elem.date_proc }}
-        	{{ elem.tradeplace }}
-        	{{ elem.stage }}
-        	{{ elem.link }}
-        	{{ elem.created_at }}
-        	{{ elem.deal_count }}
-        	{{ elem.region }}
-        	{{ elem.hash }}</li>
-			
-        {% endfor %}
-    </ul>
-{% endblock %}
+    <h2>Base</h2>
+	{% if object_list %}
+	<table class="table">
+		<thead class="thead-dark">
+			<tr>
+				<th scope="col">№</th>
+				<th scope="col">Places</th>
+				<th scope="col">Proc number</th>
+				<th scope="col">Law</th>
+				<th scope="col">Type proc</th>
+				<th scope="col">Orgs</th>
+				<th scope="col">Subject</th>
+				<th scope="col">Date start</th>
+				<th scope="col">Date end</th>
+				<th scope="col">Date proc</th>
+				<th scope="col">Tradeplace</th>
+				<th scope="col">Stage</th>
+				<th scope="col">Link</th>
+				<th scope="col">Created at</th>
+				<th scope="col">Deal count</th>
+				<th scope="col">Region</th>
+				<th scope="col">interesting</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for elem in object_list %}
+			<tr>
+				<td>{{ elem.pk }}</td>
+				<td>{{ elem.places }}</td>
+				<td>{{ elem.proc_number }}</td>
+				<td>{{ elem.law }}</td>
+				<td>{{ elem.type_proc }}</td>
+				<td>{{ elem.orgs }}</td>
+				<td>{{ elem.subject }}</td>
+				<td>{{ elem.date_start }}</td>
+				<td>{{ elem.date_end }}</td>
+				<td>{{ elem.date_proc }}</td>
+				<td>{{ elem.tradeplace }}</td>
+				<td>{{ elem.stage }}</td>
+				<td><a href="{{ elem.link }}">link</a></td>
+				<td>{{ elem.created_at }}</td>
+				<td>{{ elem.deal_count }}</td>
+				<td>{{ elem.region }}</td>
+				{% if elem.interesting == 0 %}
+				<td><a class="btn btn-primary" href="{% url 'add_int'%}?pk={{elem.pk}}&value=1&next={{ request.get_full_path }}">Add</a></td>
+				{% else %}
+				<td><a class="btn btn-primary" href="{% url 'add_int'%}?pk={{elem.pk}}&value=0&next={{ request.get_full_path }}">delete</a></td>
+				{% endif %}
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	{% else %}
+	<h1> No Data </h1>
+	{% endif %}
+	{% if object_list %}
+	<nav aria-label="Page navigation example">
+		<ul class="pagination">
+			{% if page_obj.has_previous %}
+			<li class="page-item"><a class="page-link" href="?page=1">First</a></li> 
+			<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a></li>
+			{% endif %}
+			<li class="page-item"><a class="page-link" href="#">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a></li>
+			{% if page_obj.has_next %}
+			<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }} </a></li>
+			<li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+			{% endif %}
+		</ul>
+	  </nav>
+	{% endif %}
 {% endblock %}
