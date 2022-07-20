@@ -1,0 +1,22 @@
+{% extends 'layout/layout.html' %}
+
+{% block head %}
+<title>Registration</title>
+{% endblock %}
+<!-- -------------------------------------------------------------------- -->
+{% block body_left %}
+
+{% endblock %}
+{% block body_right %}
+<h1>Registration</h1>
+<form method="post">
+{% csrf_token %}
+<table>
+{% for elem in form %}
+<tr><td>{{elem.name}}</td><td>{{elem}}</td><tr>
+{% endfor %}
+</table>
+<button type="submit" class="btn btn-primary">Ok</button>
+</form>
+{{form.errors}}
+{% endblock %}

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'bootstrap5',
     'indexpage.apps.IndexpageConfig',
+    'authorization.apps.AuthorizationConfig',
 ]
 
 MIDDLEWARE = [

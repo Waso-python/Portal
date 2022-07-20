@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render, HttpResponse
+from django.shortcuts import redirect, render
 from django.views.generic import View, TemplateView, ListView
 from .models import *
 from datetime import datetime
@@ -100,14 +100,25 @@ class FullBase(ListView):
     paginate_by = 10
     queryset = Procedures.objects.order_by('-pk')
 
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        return super().get(self, request, *args, **kwargs)
+
 class InterestingBase(ListView):
     template_name = 'indexpage/updatebase.html'
     model = Procedures
     paginate_by = 10
-    queryset = Procedures.objects.filter(interesting=1).order_by('-pk') 
+    queryset = Procedures.objects.filter(interesting=1).order_by('-pk')
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        return super().get(self, request, *args, **kwargs)
 
 def add_Interesting(request):
-    print(request.GET.get('next'))
+    if not request.user.is_authenticated:
+            return redirect('login')
     pk = int(request.GET.get('pk'))
     value = int(request.GET.get('value'))
     Procedures.objects.filter(pk=pk).update(interesting=value)
