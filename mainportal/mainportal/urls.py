@@ -19,8 +19,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('authorization.urls')),
-    path('base/', include('indexpage.urls')),
+    path('auth', include('authorization.urls')),
+    path('', include('indexpage.urls')),
 ]
 
 if settings.DEBUG:

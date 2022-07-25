@@ -99,7 +99,9 @@ class FullBase(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['inter_list'] = Interesting.objects.get(user=self.user_id).procedure.all().values_list('proc_number', flat=True)
+        inter_list = Interesting.objects.filter(user=self.user_id)
+        if (len(inter_list)):
+            context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
         return context
 
     def get(self, request, *args, **kwargs):
@@ -113,13 +115,11 @@ class InterestingBase(ListView):
     model = Procedures
     paginate_by = 10
 
-    def __init__(self, **kwargs):
-        super().__init__( **kwargs)
-        # self.user_id = None
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['inter_list'] = Interesting.objects.get(user=self.user_id).procedure.all().values_list('proc_number', flat=True)
+        inter_list = Interesting.objects.filter(user=self.user_id)
+        if (len(inter_list)):
+            context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
         return context
 
     def get(self, request, *args, **kwargs):
@@ -133,8 +133,6 @@ class InterestingBase(ListView):
             self.queryset = Interesting.objects.none()
         self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
-
-   
 
 
 def add_Interesting(request):
