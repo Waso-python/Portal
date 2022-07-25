@@ -6,9 +6,6 @@ import pytz
 import time
 from asgiref.sync import sync_to_async, async_to_sync
 
-# def index_page(request):
-#     return render(request, 'indexpage/index.html')
-
 class IndexPageView(TemplateView):
     template_name = 'indexpage/index.html'
 
@@ -27,7 +24,7 @@ class UpdateBase(View):
 
     def get(self, request):
         async_to_sync(self.fillBase)()
-        return render(request, self.template_name)
+        return redirect('base')
 
     def get_obj(self, model, value):
         try:
@@ -100,35 +97,57 @@ class FullBase(ListView):
     paginate_by = 10
     queryset = Procedures.objects.order_by('-pk')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['inter_list'] = Interesting.objects.get(user=self.user_id).procedure.all().values_list('proc_number', flat=True)
+        return context
+
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
+        self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
 
 class InterestingBase(ListView):
     template_name = 'indexpage/updatebase.html'
     model = Procedures
     paginate_by = 10
-    queryset = Procedures.objects.filter(interesting=1).order_by('-pk')
+
+    def __init__(self, **kwargs):
+        super().__init__( **kwargs)
+        # self.user_id = None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['inter_list'] = Interesting.objects.get(user=self.user_id).procedure.all().values_list('proc_number', flat=True)
+        return context
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
+        print(request.user.id)
+        try:
+            self.queryset = Interesting.objects.get(user=request.user.id).procedure.all()
+        except Exception as e:
+            print(e)
+            self.queryset = Interesting.objects.none()
+        self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
+
+   
+
 
 def add_Interesting(request):
     if not request.user.is_authenticated:
-            return redirect('login')
-    pk = int(request.GET.get('pk'))
-    value = int(request.GET.get('value'))
-    Procedures.objects.filter(pk=pk).update(interesting=value)
+        return redirect('login')
+    if not int(request.GET.get('value')):
+        Interesting.objects.get(user=request.user.id).procedure.remove(Procedures.objects.get(pk=request.GET.get('pk')))
+    else:
+        inter = Interesting.objects.get(user=request.user.id)
+        inter.procedure.add(*Procedures.objects.filter(pk=request.GET.get('pk')))
     return redirect(request.GET.get('next'))
 
-
-
-
-
-
+# a4.publications.remove(p2)
 # ['__and__', '__bool__', '__class__', '__class_getitem__', '__deepcopy__', '__delattr__', '__dict__', '__dir__', 
 # '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getstate__', '__gt__', '__hash__', 
 # '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__module__', '__ne__', '__new__', '__or__',

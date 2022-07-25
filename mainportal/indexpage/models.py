@@ -4,8 +4,8 @@ from statistics import mode
 from django.db import models
 import datetime
 import hashlib
+from django.contrib.auth.models import User
 
-# Create your models here.
 class Order(models.Model):
     ACTUAL_ANSWER = (
 		(0, 'не актуально'),
@@ -278,7 +278,6 @@ class Procedures(models.Model):
     deal_count = models.IntegerField()
     region = models.ForeignKey('Region', models.DO_NOTHING, blank=True, null=True)
     hash = models.CharField(max_length=200, null=True)
-    interesting = models.SmallIntegerField(default=0)
 
     def __str__(self) -> str:
         return f'{self.id} - {self.proc_number} - {self.subject}'
@@ -330,3 +329,7 @@ class PortalUsers(models.Model):
 
     class Meta:
         db_table = 'portal_users'
+
+class Interesting(models.Model):
+    user = models.ForeignKey(User, models.DO_NOTHING)
+    procedure = models.ManyToManyField(Procedures)

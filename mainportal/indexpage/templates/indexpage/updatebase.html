@@ -35,26 +35,26 @@
 		<tbody>
 		{% for elem in object_list %}
 			<tr>
-				<td>{{ elem.pk }}</td>
-				<td>{{ elem.places }}</td>
-				<td>{{ elem.proc_number }}</td>
-				<td>{{ elem.law }}</td>
-				<td>{{ elem.type_proc }}</td>
-				<td>{{ elem.orgs }}</td>
-				<td>{{ elem.subject }}</td>
-				<td>{{ elem.date_start }}</td>
-				<td>{{ elem.date_end }}</td>
-				<td>{{ elem.date_proc }}</td>
-				<td>{{ elem.tradeplace }}</td>
-				<td>{{ elem.stage }}</td>
-				<td><a href="{{ elem.link }}">link</a></td>
-				<td>{{ elem.created_at }}</td>
-				<td>{{ elem.deal_count }}</td>
-				<td>{{ elem.region }}</td>
-				{% if elem.interesting == 0 %}
-				<td><a class="btn btn-primary" href="{% url 'add_int'%}?pk={{elem.pk}}&value=1&next={{ request.get_full_path }}">Add</a></td>
+				<td>{{ elem.pk|safe }}</td>
+				<td>{{ elem.places|safe }}</td>
+				<td>{{ elem.proc_number|safe }}</td>
+				<td>{{ elem.law|safe }}</td>
+				<td>{{ elem.type_proc|safe }}</td>
+				<td>{{ elem.orgs|safe }}</td>
+				<td>{{ elem.subject|safe }}</td>
+				<td>{{ elem.date_start|safe }}</td>
+				<td>{{ elem.date_end|safe }}</td>
+				<td>{{ elem.date_proc|safe }}</td>
+				<td>{{ elem.tradeplace|safe }}</td>
+				<td>{{ elem.stage|safe }}</td>
+				<td><a href="{{ elem.link|safe }}">link</a></td>
+				<td>{{ elem.created_at|safe }}</td>
+				<td>{{ elem.deal_count|safe }}</td>
+				<td>{{ elem.region|safe }}</td>
+				{% if elem.proc_number in inter_list %}
+				<td><a class="btn btn-primary" href="{% url 'add_int'%}?pk={{elem.pk}}&value=0&next={{request.get_full_path}}">delete</a></td>
 				{% else %}
-				<td><a class="btn btn-primary" href="{% url 'add_int'%}?pk={{elem.pk}}&value=0&next={{ request.get_full_path }}">delete</a></td>
+				<td><a class="btn btn-primary" href="{% url 'add_int'%}?pk={{elem.pk}}&value=1&next={{request.get_full_path}}">Add</a></td>
 				{% endif %}
 			</tr>
 		{% endfor %}
