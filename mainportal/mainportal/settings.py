@@ -41,6 +41,7 @@ INTERNAL_IPS = [
 # Application definition
 
 INSTALLED_APPS = [
+    # 'django_cron',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,9 +49,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
-    'bootstrap5',
+    # 'bootstrap5',
     'indexpage.apps.IndexpageConfig',
     'authorization.apps.AuthorizationConfig',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -118,6 +120,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+#cron
+CRON_CLASSES = [
+    "updateb.cron.MyCronJob",
+    # ...
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
@@ -140,3 +147,17 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# celery
+CELERY_BROKER_URL  =  "redis://localhost:6379/0" 
+CELERY_RESULT_BACKEND  =  "redis://localhost:6379/1"
+CELERY_BEAT_SCHEDULE = {
+        'upd_base-every-120-seconds': {
+            'task': 'mainportal.tasks.upd_base',
+            'schedule': 120.0,
+            'options': {
+                'expires': 15.0,
+            },
+        
+    },
+}

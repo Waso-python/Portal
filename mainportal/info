@@ -1,0 +1,16 @@
+[2022-08-02 14:16:14,744: WARNING/MainProcess] /Users/pcorina/Desktop/Portal/venv/lib/python3.10/site-packages/celery/fixups/django.py:203: UserWarning: Using settings.DEBUG leads to a memory
+            leak, never use this setting in production environments!
+  warnings.warn('''Using settings.DEBUG leads to a memory
+
+[2022-08-02 14:16:14,748: WARNING/ForkPoolWorker-3] start
+[2022-08-02 14:16:14,749: WARNING/ForkPoolWorker-4] start
+[2022-08-02 14:16:14,750: WARNING/ForkPoolWorker-1] start
+[2022-08-02 14:16:14,754: WARNING/ForkPoolWorker-5] start
+[2022-08-02 14:16:17,515: WARNING/ForkPoolWorker-4] --- 2.7648658752441406 seconds ---
+[2022-08-02 14:16:17,516: WARNING/ForkPoolWorker-4] end
+[2022-08-02 14:16:17,636: WARNING/ForkPoolWorker-1] --- 2.8851630687713623 seconds ---
+[2022-08-02 14:16:17,636: WARNING/ForkPoolWorker-1] end
+[2022-08-02 14:16:17,670: WARNING/ForkPoolWorker-5] --- 2.914857864379883 seconds ---
+[2022-08-02 14:16:17,671: WARNING/ForkPoolWorker-5] end
+[2022-08-02 14:16:17,848: WARNING/ForkPoolWorker-3] --- 3.0991621017456055 seconds ---
+[2022-08-02 14:16:17,849: WARNING/ForkPoolWorker-3] end

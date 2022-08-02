@@ -1,10 +1,6 @@
 from django.shortcuts import redirect, render
 from django.views.generic import View, TemplateView, ListView
 from .models import *
-from datetime import datetime
-import pytz
-import time
-from asgiref.sync import sync_to_async, async_to_sync
 
 class IndexPageView(TemplateView):
     template_name = 'indexpage/index.html'
@@ -14,82 +10,7 @@ class IndexPageView(TemplateView):
         context.update({'key':'value'}) #content to send to template
         return context
 
-class UpdateBase(View):
-    template_name = 'indexpage/updatebase.html'
 
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.rawdata = None
-
-    def get(self, request):
-        async_to_sync(self.fillBase)()
-        return redirect('base')
-
-    def get_obj(self, model, value):
-        try:
-            obj = model.objects.get(full_name=value)
-        except:
-            obj = model.objects.create(full_name=value)
-        return obj
-
-    def get_org(self, partner):
-        org_inn = ''.join([i if i.isdigit() else '' for i in partner.split(':')[1]])
-        try:
-            obj = Orgs.objects.get(inn=org_inn)
-        except:
-            org_name = partner.split('(')[0]
-            obj = Orgs.objects.create(full_name=org_name, inn=org_inn)
-        return obj
-
-    def create_update_entity(self, i):
-        data_lst = RawData.objects.filter(num_proc=i).order_by('-pk')
-        data = data_lst[0]
-        data_hash = data.check_hash()
-        try:
-            entity = Procedures.objects.filter(proc_number=data.num_proc)[0]
-        except:
-            entity = Procedures()
-        if (data_hash == entity.hash):
-            return
-        entity.places=Marketplaces.objects.get(full_name='portal_providers')
-        entity.proc_number=data.num_proc
-        entity.law=self.get_obj(Laws, data.law_proc)
-        entity.type_proc=self.get_obj(TypesProc, data.type_proc)
-        entity.orgs=self.get_org(data.partner) 
-        entity.subject=data.subj_proc
-        entity.date_start=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
-        entity.date_end=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
-        entity.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
-        entity.tradeplace=Tradeplaces.objects.get(full_name='portal_providers')
-        entity.stage=self.get_obj(Stages, data.status)
-        entity.link=data.link_proc
-        entity.deal_count=int(data.count_order) if data.count_order else 0
-        entity.region=self.get_obj(Region, data.region)
-        entity.hash=data_hash
-        entity.save()
-        print(i , 'complete')
-
-    def get_rawdata(self, complete=False):
-        if not self.rawdata:
-            self.rawdata = RawData.objects.filter(complete=0)
-        if not complete:
-            return list(self.rawdata)
-        else:
-            self.rawdata.update(complete=1)
-            del self.rawdata
-
-    async def fillBase(self):
-        start_time = time.time()
-        get_rawdata_func = sync_to_async(self.get_rawdata, thread_sensitive=True)
-        rawdata = await get_rawdata_func()
-        lst = set([i.num_proc for i in rawdata])
-        create_update_entity_async = sync_to_async(self.create_update_entity, thread_sensitive=False)
-        for i in lst:
-            await create_update_entity_async(i)
-        await get_rawdata_func(True)
-        print("--- %s seconds ---" % (time.time() - start_time))
-        return len(lst)
 
 class FullBase(ListView):
     template_name = 'indexpage/updatebase.html'
@@ -144,6 +65,7 @@ def add_Interesting(request):
         inter = Interesting.objects.get(user=request.user.id)
         inter.procedure.add(*Procedures.objects.filter(pk=request.GET.get('pk')))
     return redirect(request.GET.get('next'))
+
 
 # a4.publications.remove(p2)
 # ['__and__', '__bool__', '__class__', '__class_getitem__', '__deepcopy__', '__delattr__', '__dict__', '__dir__', 

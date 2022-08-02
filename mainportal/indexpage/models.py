@@ -2,9 +2,9 @@ from pyexpat import model
 from random import choices
 from statistics import mode
 from django.db import models
+from django.contrib.auth.models import User
 import datetime
 import hashlib
-from django.contrib.auth.models import User
 
 class Order(models.Model):
     ACTUAL_ANSWER = (
