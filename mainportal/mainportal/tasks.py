@@ -3,6 +3,8 @@ from datetime import datetime
 import pytz
 import time
 from .celery import app
+import pickle
+from django.core.cache import cache
 
 class UpdateBase():
     def do(self):
@@ -35,7 +37,6 @@ class UpdateBase():
         except:
             entity = Procedures()
         if (data_hash == entity.hash):
-            print(i, 'old')
             return
         entity.places=Marketplaces.objects.get(full_name='portal_providers')
         entity.proc_number=data.num_proc
@@ -63,9 +64,13 @@ class UpdateBase():
         for i in lst:
             self.create_update_entity(i)
         rawdata.update(complete=1)
+        print('update complete! create cache BASE')
+        cache.set('BASE', pickle.loads(pickle.dumps(Procedures.objects.all().order_by('proc_number'))))
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(lst)
 
 @app.task()
 def upd_base():
     UpdateBase().do()
+
+upd_base.delay()

@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render
 from django.views.generic import View
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
+from django.core.cache import cache
 from .forms import *
 
 class RegistrationPortal(View):

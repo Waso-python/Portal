@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 from .my_set import DB_NAME, HOST_DB, PORT_DB, USER_DB, PASSWORD_DB, SECRET_KEY
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -157,7 +158,13 @@ CELERY_BEAT_SCHEDULE = {
             'schedule': 120.0,
             'options': {
                 'expires': 15.0,
-            },
-        
+            }, 
     },
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'portal_page_cache'),
+    }
 }

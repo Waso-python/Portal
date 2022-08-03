@@ -1,6 +1,8 @@
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import View, TemplateView, ListView
 from .models import *
+from django.core.cache import cache
 
 class IndexPageView(TemplateView):
     template_name = 'indexpage/index.html'
@@ -11,12 +13,10 @@ class IndexPageView(TemplateView):
         return context
 
 
-
 class FullBase(ListView):
     template_name = 'indexpage/updatebase.html'
-    model = Procedures
     paginate_by = 10
-    queryset = Procedures.objects.order_by('-pk')
+    queryset = cache.get('BASE')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -30,6 +30,7 @@ class FullBase(ListView):
             return redirect('login')
         self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
+
 
 class InterestingBase(ListView):
     template_name = 'indexpage/updatebase.html'
@@ -44,26 +45,35 @@ class InterestingBase(ListView):
         return context
 
     def get(self, request, *args, **kwargs):
+        print(len(request.GET))
+        print(str(request.user.id) + 'inter' + str(request.GET['page'] if len(request.GET) != 0 else '1'))
+        page = cache.get(str(request.user.id) + 'inter' + str(request.GET['page'] if len(request.GET) != 0 else '1'))
+        if page:
+            return page
         if not request.user.is_authenticated:
             return redirect('login')
-        print(request.user.id)
         try:
             self.queryset = Interesting.objects.get(user=request.user.id).procedure.all()
         except Exception as e:
             print(e)
             self.queryset = Interesting.objects.none()
         self.user_id = request.user.id
-        return super().get(self, request, *args, **kwargs)
+        page = super().get(self, request, *args, **kwargs).render()
+        cache.set(str(request.GET['page'] if len(request.GET) != 0 else '1'), page)
+        return page
 
 
 def add_Interesting(request):
     if not request.user.is_authenticated:
         return redirect('login')
+    print(request.GET)
     if not int(request.GET.get('value')):
         Interesting.objects.get(user=request.user.id).procedure.remove(Procedures.objects.get(pk=request.GET.get('pk')))
+        cache.set('WTF', None)
     else:
         inter = Interesting.objects.get(user=request.user.id)
         inter.procedure.add(*Procedures.objects.filter(pk=request.GET.get('pk')))
+        cache.set(str('fghm' if len(request.GET) != 0 else '1'), None)
     return redirect(request.GET.get('next'))
 
 
@@ -83,7 +93,7 @@ def add_Interesting(request):
 #  'get_or_create', 'in_bulk', 'intersection', 'iterator', 'last', 'latest', 'model', 'none', 'only', 'order_by', 
 # 'ordered', 'prefetch_related', 'query', 'raw', 'resolve_expression', 'reverse', 'select_for_update', 'select_related', 
 # 'union', 'update', 'update_or_create', 'using', 'values', 'values_list']
-
+ 
 # <QuerySet [{'id': 364668, 'num_proc': '4123073', 'link_proc': 'https://zakupki.mos.ru/need/4123073', 'status': 'Прием предложений завершен',
 #  'type_proc': 'Закупка по потребностям', 'partner': 'МУНИЦИПАЛЬНОЕ КАЗЕННОЕ УЧРЕЖДЕНИЕ САЛЕХАРДСКАЯ ДИРЕКЦИЯ ЕДИНОГО ЗАКАЗЧИКА (ИНН: 8901015840)',
 #  'partner_inn': '8901015840', 'summ_proc': '599369', 'count_order': '1', 'region': 'АО Ямало-Ненецкий', 'law_proc': '44-ФЗ', 'subj_proc': 'Засыпка котлованов на кладбище 2-е отделение',
