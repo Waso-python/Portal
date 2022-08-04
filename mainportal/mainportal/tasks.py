@@ -4,6 +4,7 @@ import pytz
 import time
 from .celery import app
 from django.core.cache import cache
+from datetime import datetime
 
 class UpdateBase():
     def do(self):
@@ -64,13 +65,14 @@ class UpdateBase():
             self.create_update_entity(i)
         rawdata.update(complete=1)
         print('update complete! create cache BASE')
-        cache.set('BASE', Procedures.objects.all().order_by('proc_number').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
+        cache.set('OLD_BASE', Procedures.objects.exclude(date_end__gte = datetime.today()).order_by('-date_end').values('id', 'places__full_name', 'proc_number', 
+                    'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
+                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name'), None)
+        cache.set('BASE', Procedures.objects.filter(date_end__gte = datetime.today()).order_by('-date_end').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
                     'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name'), None)
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(lst)
-
-'proc_number', 'law', 'type_proc,orgs' ,'subject' ,'date_start' ,'date_end,date_proc' ,'tradeplace' ,'stage','link' ,'created_at','deal_count,region'
 
 
 @app.task()

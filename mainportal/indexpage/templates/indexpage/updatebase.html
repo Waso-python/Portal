@@ -29,7 +29,9 @@
 				<th scope="col">Created at</th>
 				<th scope="col">Deal count</th>
 				<th scope="col">Region</th>
+				{% if inter_list %}
 				<th scope="col">interesting</th>
+				{% endif %}
 			</tr>
 		</thead>
 		<tbody>
@@ -53,7 +55,7 @@
 				<td>{{ elem.region__full_name|safe }}</td>
 				{% if elem.proc_number in inter_list %}
 				<td><a class="btn btn-primary" href="{% url 'add_int'%}?pk={{elem.id}}&value=0&next={{request.get_full_path}}">delete</a></td>
-				{% else %}
+				{% elif inter_list %}
 				<td><a class="btn btn-primary" href="{% url 'add_int'%}?pk={{elem.id}}&value=1&next={{request.get_full_path}}">Add</a></td>
 				{% endif %}
 			</tr>
