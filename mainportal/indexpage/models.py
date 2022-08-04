@@ -261,6 +261,9 @@ class Region(models.Model):
     def __str__(self) -> str:
         return f'{self.id} - {self.full_name}'
 
+    def __unicode__(self):
+        return u'%s' % self.full_name
+
 class Procedures(models.Model):
     places = models.ForeignKey(Marketplaces, models.DO_NOTHING, blank=True, null=True)
     proc_number = models.CharField(max_length=512)

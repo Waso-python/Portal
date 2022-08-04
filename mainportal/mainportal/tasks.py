@@ -65,9 +65,17 @@ class UpdateBase():
             self.create_update_entity(i)
         rawdata.update(complete=1)
         print('update complete! create cache BASE')
-        cache.set('BASE', pickle.loads(pickle.dumps(Procedures.objects.all().order_by('proc_number'))))
+        cache.set('BASE', Procedures.objects.all().order_by('proc_number').values('id', 'places__full_name', 'proc_number', 'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name'), None)
+        # qu = Procedures.objects.all().order_by('proc_number').prefetch_related('places')[:]
+        # print(qu.places)
+        # print(qu.tradeplace)
+        # print(qu.places.link)
+        # cache.set('BASE', pickle.loads(pickle.dumps(Procedures.objects.all().order_by('proc_number').values())))
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(lst)
+
+'proc_number', 'law', 'type_proc,orgs' ,'subject' ,'date_start' ,'date_end,date_proc' ,'tradeplace' ,'stage','link' ,'created_at','deal_count,region'
+
 
 @app.task()
 def upd_base():
