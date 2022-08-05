@@ -16,8 +16,7 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
-from .celery import app
-from .tasks import UpdateBase , upd_base
+from .tasks import upd_base
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,10 +30,5 @@ if settings.DEBUG:
         path('_debug_/', include(debug_toolbar.urls)),
     ]
 
-# @app.on_after_configure.connect
-# def setup_periodic_tasks(sender, **kwargs):
-#     # Calls test('hello') every 10 seconds.
-#     sender.add_periodic_task(10.0, upd_base.s(), name='ph every 10')
-
-# upd_base.delay()
+# upd_base()
 

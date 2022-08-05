@@ -43,6 +43,16 @@ class OldBase(ListView):
             return redirect('login')
         return super().get(self, request, *args, **kwargs)
 
+class RecomendBase(ListView):
+    template_name = 'indexpage/updatebase.html'
+    paginate_by = 100
+    queryset = cache.get('RECOMEND')
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        return super().get(self, request, *args, **kwargs)
+
 
 class InterestingBase(ListView):
     template_name = 'indexpage/updatebase.html'
@@ -70,9 +80,6 @@ class InterestingBase(ListView):
         print(self.queryset)
         self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
-        page = super().get(self, request, *args, **kwargs).render()
-        cache.set(str(request.GET['page'] if len(request.GET) != 0 else '1'), page)
-        return page
 
 
 def add_Interesting(request):

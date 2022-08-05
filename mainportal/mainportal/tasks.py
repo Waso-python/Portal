@@ -64,19 +64,38 @@ class UpdateBase():
         for i in lst:
             self.create_update_entity(i)
         rawdata.update(complete=1)
-        print('update complete! create cache BASE')
-        cache.set('OLD_BASE', Procedures.objects.exclude(date_end__gte = datetime.today()).order_by('-date_end').values('id', 'places__full_name', 'proc_number', 
-                    'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name'), None)
-        cache.set('BASE', Procedures.objects.filter(date_end__gte = datetime.today()).order_by('-date_end').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
-                    'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name'), None)
+        cache_base.delay()
+        cache_old_base.delay()
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(lst)
+
+@app.task()
+def cache_base():
+    cache.set('BASE', Procedures.objects.filter(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
+                    'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
+                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name'), None)
+    cache_recomend.delay()
+
+@app.task()
+def cache_old_base():
+    cache.set('OLD_BASE', Procedures.objects.exclude(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 
+                    'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
+                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name'), None)
+
+@app.task()
+def cache_recomend():
+    recomend = []
+    key_words = ('компьютер', 'принтер', 'заправка', 'картридж', 'подароч', 'комплектующ', 'ноутбук')
+    base = cache.get('BASE')
+    for elem in base:
+        for i in key_words:
+            if i in elem['subject'].lower():
+                recomend.append(elem)
+                break
+    cache.set('RECOMEND', recomend, None)
+
 
 
 @app.task()
 def upd_base():
     UpdateBase().do()
-
-upd_base.delay()
