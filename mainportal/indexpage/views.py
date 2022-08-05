@@ -48,9 +48,19 @@ class RecomendBase(ListView):
     paginate_by = 100
     queryset = cache.get('RECOMEND')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        inter_list = Interesting.objects.filter(user=self.user_id)
+        print(bool(inter_list))
+        context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
+        if not context['inter_list']:
+            context['inter_list'] = True
+        return context
+
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
+        self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
 
 
