@@ -2,6 +2,7 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView, ListView
 from .models import *
 from django.core.cache import cache
+from django.core.exceptions import FieldError
 
 class IndexPageView(TemplateView):
     template_name = 'indexpage/index.html'
@@ -19,9 +20,12 @@ class FullBase(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['page_name'] = 'Base'
         inter_list = Interesting.objects.filter(user=self.user_id)
-        print(bool(inter_list))
-        context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
+        try:
+            context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
+        except IndexError:
+            context['inter_list'] = None
         if not context['inter_list']:
             context['inter_list'] = True
         return context
@@ -38,6 +42,11 @@ class OldBase(ListView):
     paginate_by = 100
     queryset = cache.get('OLD_BASE')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_name'] = 'Old base'
+        return context
+
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
@@ -50,9 +59,12 @@ class RecomendBase(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['page_name'] = 'Recomend'
         inter_list = Interesting.objects.filter(user=self.user_id)
-        print(bool(inter_list))
-        context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
+        try:
+            context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
+        except IndexError:
+            context['inter_list'] = None
         if not context['inter_list']:
             context['inter_list'] = True
         return context
@@ -71,15 +83,14 @@ class InterestingBase(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        inter_list = Interesting.objects.filter(user=self.user_id)
-        context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
+        context['page_name'] = 'Interesting'
+        try:
+            context['inter_list'] = self.queryset.values_list('proc_number', flat=True)
+        except (IndexError, FieldError):
+            context['inter_list'] = None
         return context
 
     def get(self, request, *args, **kwargs):
-        print(str(request.user.id) + 'inter' + str(request.GET['page'] if len(request.GET) != 0 else '1'))
-        page = cache.get(str(request.user.id) + 'inter' + str(request.GET['page'] if len(request.GET) != 0 else '1'))
-        if page:
-            return page
         if not request.user.is_authenticated:
             return redirect('login')
         try:
@@ -87,9 +98,8 @@ class InterestingBase(ListView):
                     'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')
         except Exception as e:
-            print('ERROR' + e)
+            print('ERROR' + str(e))
             self.queryset = Interesting.objects.none()
-        print(self.queryset)
         self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
 
@@ -100,9 +110,11 @@ def add_Interesting(request):
     print(request.GET)
     if not int(request.GET.get('value')):
         Interesting.objects.get(user=request.user.id).procedure.remove(Procedures.objects.get(pk=request.GET.get('pk')))
-        # cache.set('???', None)
     else:
-        inter = Interesting.objects.get(user=request.user.id)
+        try:
+            inter = Interesting.objects.get(user=request.user.id)
+        except Interesting.DoesNotExist:
+            inter = Interesting(user=User.objects.get(pk=request.user.id)).save()
+            inter = Interesting.objects.get(user=request.user.id)
         inter.procedure.add(*Procedures.objects.filter(pk=request.GET.get('pk')))
-        # cache.set(str('???' if len(request.GET) != 0 else '1'), None)
     return redirect(request.GET.get('next'))

@@ -42,7 +42,6 @@ INTERNAL_IPS = [
 # Application definition
 
 INSTALLED_APPS = [
-    # 'django_cron',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,7 +49,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
-    # 'bootstrap5',
     'indexpage.apps.IndexpageConfig',
     'authorization.apps.AuthorizationConfig',
     'django_celery_beat'

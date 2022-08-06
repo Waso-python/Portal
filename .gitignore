@@ -5,6 +5,8 @@ __pycache__/
 *$py.class
 *.ipynb
 *.djcache
+*.rdb
+*.sqlite3
 
 # C extensions
 *.so
