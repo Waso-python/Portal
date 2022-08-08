@@ -29,7 +29,7 @@ class UpdateBase():
         return obj
 
     def create_update_entity(self, i):
-        data_lst = RawData.objects.filter(num_proc=i).order_by('-pk')
+        data_lst = RawData.objects.filter(num_proc=i[0]).order_by('-pk')
         data = data_lst[0]
         data_hash = data.check_hash()
         try:
@@ -54,33 +54,30 @@ class UpdateBase():
         entity.region=self.get_obj(Region, data.region)
         entity.hash=data_hash
         entity.save()
-        print(i , 'complete')
-
+        print(i[0] + ' complete')
 
     def fillBase(self):
         start_time = time.time()
-        rawdata =  RawData.objects.filter(complete=0)
-        lst = set([i.num_proc for i in rawdata])
-        for i in lst:
-            self.create_update_entity(i)
+        rawdata =  RawData.objects.filter(complete=0).values_list('num_proc')
+        set(map(self.create_update_entity, set(rawdata)))
         rawdata.update(complete=1)
         cache_base.delay()
         cache_old_base.delay()
         print("--- %s seconds ---" % (time.time() - start_time))
-        return len(lst)
+        return len(rawdata)
 
 @app.task()
 def cache_base():
-    cache.set('BASE', Procedures.objects.filter(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
+    cache.set('BASE', list(Procedures.objects.filter(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
                     'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name'), None)
+                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')), None)
     cache_recomend.delay()
 
 @app.task()
 def cache_old_base():
-    cache.set('OLD_BASE', Procedures.objects.exclude(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 
+    cache.set('OLD_BASE', list(Procedures.objects.exclude(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 
                     'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name'), None)
+                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')), None)
 
 @app.task()
 def cache_recomend():
@@ -93,7 +90,6 @@ def cache_recomend():
                 recomend.append(elem)
                 break
     cache.set('RECOMEND', recomend, None)
-
 
 
 @app.task()

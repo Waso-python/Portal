@@ -103,18 +103,18 @@ class InterestingBase(ListView):
         self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
 
-
-def add_Interesting(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-    print(request.GET)
-    if not int(request.GET.get('value')):
-        Interesting.objects.get(user=request.user.id).procedure.remove(Procedures.objects.get(pk=request.GET.get('pk')))
-    else:
-        try:
-            inter = Interesting.objects.get(user=request.user.id)
-        except Interesting.DoesNotExist:
-            inter = Interesting(user=User.objects.get(pk=request.user.id)).save()
-            inter = Interesting.objects.get(user=request.user.id)
-        inter.procedure.add(*Procedures.objects.filter(pk=request.GET.get('pk')))
-    return redirect(request.GET.get('next'))
+    @staticmethod
+    def add_Interesting(request):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        print(request.GET)
+        if not int(request.GET.get('value')):
+            Interesting.objects.get(user=request.user.id).procedure.remove(Procedures.objects.get(pk=request.GET.get('pk')))
+        else:
+            try:
+                inter = Interesting.objects.get(user=request.user.id)
+            except Interesting.DoesNotExist:
+                inter = Interesting(user=User.objects.get(pk=request.user.id)).save()
+                inter = Interesting.objects.get(user=request.user.id)
+            inter.procedure.add(*Procedures.objects.filter(pk=request.GET.get('pk')))
+        return redirect(request.GET.get('next'))
