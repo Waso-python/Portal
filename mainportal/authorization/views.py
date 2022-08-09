@@ -3,6 +3,8 @@ from django.views.generic import View
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.core.cache import cache
+from django.contrib.auth.models import User
+from usersProfile.models import ProfileUserModel
 from .forms import *
 
 class RegistrationPortal(View):
@@ -25,6 +27,9 @@ class RegistrationPortal(View):
                                     password=self.form.cleaned_data['password1']
                                     )
                 if user is not None:
+                    ProfileUserModel(user=User.objects.get(username=self.form.cleaned_data['username']), 
+                                     keys={'places':'', 'law':'', 'type_proc':'', 'orgs':'', 'subject':'', 'region':''}
+                                    ).save()
                     login(request, user)
                 return redirect('base')
             else:
@@ -50,7 +55,7 @@ class LoginPortal(View):
                                 )
             if user is not None:
                 login(request, user)
-                return redirect('interesting')
+                return redirect('base')
         else:
             print('not valid')
         return render(request, self.template_name, {'form':self.form})

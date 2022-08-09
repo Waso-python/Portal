@@ -334,5 +334,5 @@ class PortalUsers(models.Model):
         db_table = 'portal_users'
 
 class Interesting(models.Model):
-    user = models.ForeignKey(User, models.DO_NOTHING)
+    user = models.ForeignKey(User, models.CASCADE)
     procedure = models.ManyToManyField(Procedures)

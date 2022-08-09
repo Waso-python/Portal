@@ -20,6 +20,7 @@
 					{% if request.user.is_authenticated %}
 					<h3 style="color: #FFFFFF;">{{request.user}}</h3>
 					<a style="position: relative; left: 0; bottom: 100" class="btn btn-dark" href="{% url 'logout' %}">LogOut</a>
+					<a style="position: relative; left: 0; bottom: 100" class="btn btn-dark" href="{% url 'profile' %}">Profile</a>
 					{% else %}
 					<a style="position: relative; left: 0; bottom: 100" class="btn btn-dark" href="{% url 'login' %}">Login</a>
 					<a style="position: relative; left: 0; bottom: 100" class="btn btn-dark" href="{% url 'registration' %}">Registration</a>

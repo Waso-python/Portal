@@ -1,4 +1,3 @@
-from cProfile import label
 from django import forms
 
 class LoginForm(forms.Form):
