@@ -9,16 +9,16 @@
 {% endblock %}
 {% block body_right %}
     <h2>{{ page_name }}</h2>
-	{% if not object_list == None %}
+	{% if object_list %}
 	<table class="table table-striped table-sm">
 		<thead class="thead-dark">
 			<tr>
-				<th scope="col">id</th>
 				<th scope="col">Сайт</th>
 				<th scope="col">№</th>
 				<th scope="col">Закон</th>
 				<th scope="col">Тип</th>
 				<th scope="col">Огранизация</th>
+				<th scope="col">ИНН</th>
 				<th scope="col">Задача</th>
 				<th scope="col">Дата старта</th>
 				<th scope="col">Дата рассмотрения</th>
@@ -37,12 +37,12 @@
 		<tbody>
 		{% for elem in object_list %}
 			<tr>
-				<td>{{ elem.id|safe }}</td>
 				<td>{{ elem.places__full_name|safe }}</td>
 				<td>{{ elem.proc_number|safe }}</td>
 				<td>{{ elem.law__full_name|safe }}</td>
 				<td>{{ elem.type_proc__full_name|safe }}</td>
 				<td>{{ elem.orgs__full_name|safe }}</td>
+				<td>{{ elem.orgs__inn|safe }}</td>
 				<td>{{ elem.subject|safe }}</td>
 				<td>{{ elem.date_start|safe }}</td>
 				<td>{{ elem.date_end|safe }}</td>

@@ -11,5 +11,3 @@ class ProfileUserModel(models.Model):
             if type(form_value[elem]) == type([]):
                 form_value[elem] = ', '.join(form_value[elem])
         return form_value
-
-    

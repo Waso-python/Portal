@@ -55,7 +55,6 @@ class OldBase(ListView):
 class RecomendBase(ListView):
     template_name = 'indexpage/updatebase.html'
     paginate_by = 100
-    queryset = cache.get('RECOMEND')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -72,6 +71,7 @@ class RecomendBase(ListView):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
+        self.queryset = cache.get('RECOMEND' + str(request.user.id))
         self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
 

@@ -28,7 +28,7 @@ class RegistrationPortal(View):
                                     )
                 if user is not None:
                     ProfileUserModel(user=User.objects.get(username=self.form.cleaned_data['username']), 
-                                     keys={'places':'', 'law':'', 'type_proc':'', 'orgs':'', 'subject':'', 'region':''}
+                                     keys={'places':'', 'law':'', 'type_proc':'', 'orgs':'', 'inn':'', 'subject':'', 'region':''}
                                     ).save()
                     login(request, user)
                 return redirect('base')

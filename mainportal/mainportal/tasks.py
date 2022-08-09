@@ -1,4 +1,6 @@
+from ast import keyword
 from indexpage.models import *
+from usersProfile.models import ProfileUserModel
 from datetime import datetime
 import pytz
 import time
@@ -44,9 +46,9 @@ class UpdateBase():
         entity.type_proc=self.get_obj(TypesProc, data.type_proc)
         entity.orgs=self.get_org(data.partner) 
         entity.subject=data.subj_proc
-        entity.date_start=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
-        entity.date_end=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
-        entity.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
+        entity.date_start=pytz.timezone('Etc/GMT-0').localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
+        entity.date_end=pytz.timezone('Etc/GMT-0').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
+        entity.date_proc=pytz.timezone('Etc/GMT-0').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
         entity.tradeplace=Tradeplaces.objects.get(full_name='portal_providers')
         entity.stage=self.get_obj(Stages, data.status)
         entity.link=data.link_proc
@@ -69,29 +71,48 @@ class UpdateBase():
 @app.task()
 def cache_base():
     cache.set('BASE', list(Procedures.objects.filter(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
-                    'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
+                    'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')), None)
-    cache_recomend.delay()
+    users_id = ProfileUserModel.objects.all().values('user')
+    for user_id in users_id:
+        cache_recomend.delay(user_id['user'])
 
 @app.task()
 def cache_old_base():
     cache.set('OLD_BASE', list(Procedures.objects.exclude(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 
-                    'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
+                    'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')), None)
 
+def find_element(elem: str, keys: str):
+    if not keys.strip():
+        return True
+    for i in keys.replace(' ','').lower().split(','):
+        if i in elem.lower():
+            return True
+    return False
+
 @app.task()
-def cache_recomend():
+def cache_recomend(user_id):
     recomend = []
-    key_words = ('компьютер', 'принтер', 'заправка', 'картридж', 'подароч', 'комплектующ', 'ноутбук')
     base = cache.get('BASE')
+    keywords = ProfileUserModel.objects.get(user=user_id).keys
+    print(keywords)
     for elem in base:
-        for i in key_words:
-            if i in elem['subject'].lower():
-                recomend.append(elem)
-                break
-    cache.set('RECOMEND', recomend, None)
+        if (find_element(elem['subject'], keywords['subject']) and
+            find_element(elem['places__full_name'], keywords['places']) and
+            find_element(elem['law__full_name'], keywords['law']) and
+            find_element(elem['type_proc__full_name'], keywords['type_proc']) and
+            find_element(elem['orgs__full_name'], keywords['orgs']) and
+            find_element(elem['orgs__inn'], keywords['inn']) and
+            find_element(elem['region__full_name'], keywords['region'])):
+            recomend.append(elem)
+    cache.set('RECOMEND' +  str(user_id), recomend, None)
+    return f'Cache user_id={user_id} complete'
 
 
 @app.task()
 def upd_base():
     UpdateBase().do()
+
+
+# ('компьютер', 'принтер', 'заправка', 'картридж', 'подароч', 'комплектующ', 'ноутбук')
