@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'indexpage.apps.IndexpageConfig',
     'authorization.apps.AuthorizationConfig',
+    'usersProfile.apps.UsersprofileConfig',
     'django_celery_beat'
 ]
 
