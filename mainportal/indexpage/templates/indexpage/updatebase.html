@@ -25,9 +25,8 @@
 				<th scope="col">Прием заявок до</th>
 				<th scope="col">Торговая площадка</th>
 				<th scope="col">Этап</th>
-				<th scope="col">Ссылка</th>
 				<th scope="col">Дата создания</th>
-				<th scope="col">Колличество заявок</th>
+				<th scope="col">Кол-во заявок</th>
 				<th scope="col">Регион</th>
 				{% if inter_list %}
 				<th scope="col">В интересных</th>
@@ -38,7 +37,7 @@
 		{% for elem in object_list %}
 			<tr>
 				<td>{{ elem.places__full_name|safe }}</td>
-				<td>{{ elem.proc_number|safe }}</td>
+				<td><a href="{{ elem.link|safe }}">{{ elem.proc_number|safe }}</a></td>
 				<td>{{ elem.law__full_name|safe }}</td>
 				<td>{{ elem.type_proc__full_name|safe }}</td>
 				<td>{{ elem.orgs__full_name|safe }}</td>
@@ -49,7 +48,6 @@
 				<td>{{ elem.date_proc|safe }}</td>
 				<td>{{ elem.tradeplace__full_name|safe }}</td>
 				<td>{{ elem.stage__full_name|safe }}</td>
-				<td><a href="{{ elem.link|safe }}">link</a></td>
 				<td>{{ elem.created_at|safe }}</td>
 				<td>{{ elem.deal_count|safe }}</td>
 				<td>{{ elem.region__full_name|safe }}</td>

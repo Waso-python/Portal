@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from django.views.generic import ListView, View, TemplateView
-from .forms import KeysForm
+from .forms import KeysForm, LawForm
 from .models import ProfileUserModel
 from mainportal.tasks import cache_recomend
 
@@ -12,7 +12,8 @@ class ProfileView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         form = KeysForm(initial=self.userkeys.get_format())
-        context.update({'form':form})
+        form_laws = LawForm()
+        context.update({'form':form, 'form_laws':form_laws})
         return context
 
 
