@@ -14,7 +14,7 @@ class IndexPageView(TemplateView):
 
 
 class FullBase(ListView):
-    template_name = 'indexpage/updatebase.html'
+    template_name = 'indexpage/base.html'
     paginate_by = 100
     queryset = cache.get('BASE')
 
@@ -38,7 +38,7 @@ class FullBase(ListView):
 
 
 class OldBase(ListView):
-    template_name = 'indexpage/updatebase.html'
+    template_name = 'indexpage/base.html'
     paginate_by = 100
     queryset = cache.get('OLD_BASE')
 
@@ -53,7 +53,7 @@ class OldBase(ListView):
         return super().get(self, request, *args, **kwargs)
 
 class RecomendBase(ListView):
-    template_name = 'indexpage/updatebase.html'
+    template_name = 'indexpage/base.html'
     paginate_by = 100
 
     def get_context_data(self, **kwargs):
@@ -77,7 +77,7 @@ class RecomendBase(ListView):
 
 
 class InterestingBase(ListView):
-    template_name = 'indexpage/updatebase.html'
+    template_name = 'indexpage/base.html'
     model = Procedures
     paginate_by = 10
 
@@ -118,3 +118,24 @@ class InterestingBase(ListView):
                 inter = Interesting.objects.get(user=request.user.id)
             inter.procedure.add(*Procedures.objects.filter(pk=request.GET.get('pk')))
         return redirect(request.GET.get('next'))
+
+class ProcedureView(TemplateView):
+    template_name = 'indexpage/procedure.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        print(kwargs['num'], type(kwargs['num']))
+        try:
+            procedure = Procedures.objects.filter(proc_number=kwargs['num']).values('id', 'places__full_name', 'proc_number', 'law__full_name', 
+                    'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
+                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')[0]
+            context.update({'procedure':procedure, 'page_name':'Procedure'})
+        except IndexError:
+            print('nope')
+            context.update({'page_name':'Procedure'})
+        return context
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        return super().get(self, request, *args, **kwargs)

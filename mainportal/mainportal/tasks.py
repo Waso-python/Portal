@@ -33,35 +33,35 @@ class UpdateBase():
     def create_update_entity(self, i):
         data_lst = RawData.objects.filter(num_proc=i[0]).order_by('-pk')
         data = data_lst[0]
-        # data_hash = data.check_hash()
+        data_hash = data.check_hash()
         try:
             entity = Procedures.objects.filter(proc_number=data.num_proc)[0]
-        except:
-            return
+        except IndexError:
             entity = Procedures()
         # if (data_hash == entity.hash):
         #     return
-        # entity.places=Marketplaces.objects.get(full_name='portal_providers')
-        # entity.proc_number=data.num_proc
-        # entity.law=self.get_obj(Laws, data.law_proc)
-        # entity.type_proc=self.get_obj(TypesProc, data.type_proc)
-        # entity.orgs=self.get_org(data.partner) 
-        # entity.subject=data.subj_proc
-        entity.date_start=datetime.strptime(data.start_date, '%d.%m.%Y')
-        entity.date_end=datetime.strptime(data.end_date, '%d.%m.%Y %H:%M')
-        entity.date_proc=datetime.strptime(data.end_date, '%d.%m.%Y %H:%M')
-        # entity.tradeplace=Tradeplaces.objects.get(full_name='portal_providers')
-        # entity.stage=self.get_obj(Stages, data.status)
-        # entity.link=data.link_proc
-        # entity.deal_count=int(data.count_order) if data.count_order else 0
-        # entity.region=self.get_obj(Region, data.region)
-        # entity.hash=data_hash
+        entity.places=Marketplaces.objects.get(full_name='portal_providers')
+        entity.proc_number=data.num_proc
+        entity.law=self.get_obj(Laws, data.law_proc)
+        entity.type_proc=self.get_obj(TypesProc, data.type_proc)
+        entity.orgs=self.get_org(data.partner) 
+        entity.subject=data.subj_proc
+        entity.date_start=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
+        entity.date_end=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
+        entity.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
+        entity.tradeplace=Tradeplaces.objects.get(full_name='portal_providers')
+        entity.stage=self.get_obj(Stages, data.status)
+        entity.link=data.link_proc
+        entity.deal_count=int(data.count_order) if data.count_order else 0
+        entity.region=self.get_obj(Region, data.region)
+        entity.hash=data_hash
         entity.save()
         print(i[0] + ' complete')
 
     def fillBase(self):
         start_time = time.time()
         rawdata =  RawData.objects.filter(complete=0).values_list('num_proc')
+        print(len(set(rawdata)))
         set(map(self.create_update_entity, set(rawdata)))
         if len(rawdata) > 0:
             cache_base.delay()

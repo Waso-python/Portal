@@ -1,0 +1,32 @@
+{% extends 'layout/layout.html' %}
+
+{% block head %}
+<title>Base</title>
+{% endblock %}
+<!-- -------------------------------------------------------------------- -->
+{% block body_left %}
+
+{% endblock %}
+{% block body_right %}
+<h2>{{ page_name }}</h2>
+{% if procedure %}
+<table class="table table-striped table-sm">
+    <tr><th></td>{{ procedure.proc_number|safe }}</th></tr>
+    <tr><td>{{ procedure.law__full_name|safe }}</td></tr>
+    <tr><td>{{ procedure.type_proc__full_name|safe }}</tr></td>
+    <tr><td>{{ procedure.orgs__full_name|safe }}</tr></td>
+    <tr><td>{{ procedure.orgs__inn|safe }}</tr></td>
+    <tr><td>{{ procedure.subject|safe }}</tr></td>
+    <tr><td>{{ procedure.date_start }}</tr></td>
+    <tr><td>{{ procedure.date_end }}</tr></td>
+    <tr><td>{{ procedure.date_proc }}</tr></td>
+    <tr><td><a href="{{ procedure.link|safe }}">{{ procedure.tradeplace__full_name|safe }}</a></tr></td>
+    <tr><td>{{ procedure.stage__full_name|safe }}</tr></td>
+    <tr><td>{{ procedure.created_at|safe }}</tr></td>
+    <tr><td>{{ procedure.deal_count|safe }}</tr></td>
+    <tr><td>{{ procedure.region__full_name|safe }}</tr></td>
+</table>
+{% else %}
+<h2>No Data</h2>
+{% endif %}
+{% endblock %}

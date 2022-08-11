@@ -30,4 +30,4 @@ class ProfileView(ListView):
                              'orgs':request.POST['orgs'], 'inn':request.POST['inn'], 'subject':request.POST['subject'], 'region':request.POST['region']}
             self.userkeys.save()
         cache_recomend.delay(request.user.id)
-        return redirect('profile') 
+        return redirect('profile')
