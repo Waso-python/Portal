@@ -66,7 +66,7 @@ class UpdateBase():
         if len(rawdata) > 0:
             cache_base.delay()
             cache_old_base.delay()
-        rawdata.update(complete=1)
+            rawdata.update(complete=1)
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(rawdata)
 
@@ -89,7 +89,7 @@ def find_element(elem: str, keys: str):
     if not keys.strip():
         return True
     for i in keys.replace(' ','').lower().split(','):
-        if i in elem.lower():
+        if i and i in elem.lower():
             return True
     return False
 

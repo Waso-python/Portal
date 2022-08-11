@@ -1,6 +1,7 @@
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, ListView
-from .models import *
+from .models import Interesting, Procedures, User, UserOrders, UserOrgs
+from .forms import UserOrdersForm
 from django.core.cache import cache
 from django.core.exceptions import FieldError
 
@@ -119,23 +120,39 @@ class InterestingBase(ListView):
             inter.procedure.add(*Procedures.objects.filter(pk=request.GET.get('pk')))
         return redirect(request.GET.get('next'))
 
-class ProcedureView(TemplateView):
+class ProcedureView(ListView):
     template_name = 'indexpage/procedure.html'
+    model = Procedures
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        print(kwargs['num'], type(kwargs['num']))
+        print(kwargs)
         try:
-            procedure = Procedures.objects.filter(proc_number=kwargs['num']).values('id', 'places__full_name', 'proc_number', 'law__full_name', 
+            procedure = Procedures.objects.filter(proc_number=self.proc_number).values('id', 'places__full_name', 'proc_number', 'law__full_name', 
                     'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')[0]
             context.update({'procedure':procedure, 'page_name':'Procedure'})
         except IndexError:
             print('nope')
-            context.update({'page_name':'Procedure'})
+        form = UserOrdersForm()
+        form.fields['my_org'].queryset = Procedures.objects.all()[:10]
+        context.update({'page_name':'Procedure', 'userordersform':form})
         return context
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
+        # print(kwargs['proc_num'], type(kwargs['proc_num']))
+        self.proc_number = kwargs['proc_num']
         return super().get(self, request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        print(self.kwargs['proc_num'])
+        try:
+            orders = UserOrders.objects.get_or_create(user=User.objects.get(pk=request.user.id), 
+                                            procedure=Procedures.objects.get(proc_number=self.kwargs['proc_num']),
+                                            my_org = UserOrgs.objects.get(user=request.user.id))
+        except UserOrders.DoesNotExist: 
+            print('Nope')
+        # orders.
+        return redirect(request.path_info) 

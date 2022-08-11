@@ -336,3 +336,15 @@ class PortalUsers(models.Model):
 class Interesting(models.Model):
     user = models.ForeignKey(User, models.CASCADE)
     procedure = models.ManyToManyField(Procedures)
+
+class UserOrders(models.Model):
+    user = models.ForeignKey(User, models.CASCADE)
+    procedure = models.ForeignKey(Procedures, models.DO_NOTHING)
+    my_org = models.ForeignKey('UserOrgs', models.DO_NOTHING)
+    amount = models.CharField(max_length=255, blank=True, null=True)
+    comment = models.CharField(max_length=1024, blank=True, null=True)
+    win = models.BooleanField(blank=True, null=True)
+
+class UserOrgs(models.Model):
+    user = models.ForeignKey(User, models.CASCADE)
+    name = models.CharField(max_length=255, blank=True, null=True)

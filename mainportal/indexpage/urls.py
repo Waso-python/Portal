@@ -8,5 +8,5 @@ urlpatterns = [
     path('recomend/', views.RecomendBase.as_view(), name='recomend'),
     path('completed/', views.OldBase.as_view(), name='completed'),
     path('add/', views.InterestingBase.add_Interesting, name='add_int'),
-    path('procedure/<str:num>', views.ProcedureView.as_view(), name='procedure')
+    path('procedure/<str:proc_num>', views.ProcedureView.as_view(), name='procedure')
 ]
