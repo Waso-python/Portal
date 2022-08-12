@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
 
-# app_name = 'indexpage'
 urlpatterns = [
     path('', views.FullBase.as_view(), name='base'),
     path('interesting/', views.InterestingBase.as_view(), name='interesting'),

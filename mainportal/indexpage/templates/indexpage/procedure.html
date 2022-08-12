@@ -14,7 +14,7 @@
         <div class="col-md-6" style="background-color: #ffffff; text-align: center; min-height: 100%;">
             {% if procedure %}
             <table class="table table-striped table-sm">
-                <tr><th></td>{{ procedure.proc_number|safe }}</th></tr>
+                <tr><th>{{ procedure.proc_number|safe }}</th></tr>
                 <tr><td>{{ procedure.law__full_name|safe }}</td></tr>
                 <tr><td>{{ procedure.type_proc__full_name|safe }}</tr></td>
                 <tr><td>{{ procedure.orgs__full_name|safe }}</tr></td>
@@ -33,13 +33,21 @@
             <h2>No Data</h2>
             {% endif %}
         </div>
-        <div class="col-md-6" style="background-color: #ffffff; text-align: center; min-height: 100%;">
+        <div class="col-md-6" style="background-color: #ffffff; min-height: 100%;">
             <form method="post">
                 {% csrf_token %}
-                {{userordersform}}
-                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <table>
+                <tr><td>{{ new_orders_form.my_org.label }}</td> <td>{{ new_orders_form.my_org }}</td></tr>
+                <tr><td>{{ new_orders_form.amount.label }} </td> <td> {{ new_orders_form.amount }}</td></tr>
+                <tr><td>{{ new_orders_form.comment.label }} </td> <td> {{ new_orders_form.comment }}</td></tr>
+                <tr><td>{{ new_orders_form.win.label }} </td> <td> {{ new_orders_form.win }}</td></tr>
+                </table>
+                <button type="submit" class="btn btn-primary">Добавить</button>
             </form>
         </div>
     </div>
+    {% for elem in orders %}
+    {{ elem }}
+    {% endfor %}
 </div>
 {% endblock %}

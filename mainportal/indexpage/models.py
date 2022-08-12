@@ -1,8 +1,10 @@
 from pyexpat import model
 from random import choices
 from statistics import mode
+from xml.etree.ElementTree import Comment
 from django.db import models
 from django.contrib.auth.models import User
+from .forms import UserOrdersForm
 import datetime
 import hashlib
 
@@ -21,10 +23,10 @@ class Order(models.Model):
     actual_for_me = models.IntegerField(choices = ACTUAL_ANSWER)
     end_date = models.DateTimeField()
     add_date = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self) -> str:
         return f'{self.subj_proc} until {self.end_date}'
-    
+
 class AuthGroup(models.Model):
     name = models.CharField(unique=True, max_length=150)
 
@@ -344,6 +346,12 @@ class UserOrders(models.Model):
     amount = models.CharField(max_length=255, blank=True, null=True)
     comment = models.CharField(max_length=1024, blank=True, null=True)
     win = models.BooleanField(blank=True, null=True)
+
+    def get_orders_form(self):
+        return UserOrdersForm(initial=self)
+
+    def __str__(self):
+        return f'{self.user}  {self.procedure}  {self.my_org}'
 
 class UserOrgs(models.Model):
     user = models.ForeignKey(User, models.CASCADE)

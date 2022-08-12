@@ -126,7 +126,6 @@ class ProcedureView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        print(kwargs)
         try:
             procedure = Procedures.objects.filter(proc_number=self.proc_number).values('id', 'places__full_name', 'proc_number', 'law__full_name', 
                     'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
@@ -135,24 +134,34 @@ class ProcedureView(ListView):
         except IndexError:
             print('nope')
         form = UserOrdersForm()
-        form.fields['my_org'].queryset = Procedures.objects.all()[:10]
-        context.update({'page_name':'Procedure', 'userordersform':form})
+        form.fields['my_org'].queryset = self.user_orgs
+        context.update({'page_name':'Procedure',
+                        'new_orders_form':form,
+                        'orders':self.user_orders})
         return context
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
-        # print(kwargs['proc_num'], type(kwargs['proc_num']))
+        print(kwargs['proc_num'], type(kwargs['proc_num']))
         self.proc_number = kwargs['proc_num']
+        self.user_orgs = UserOrgs.objects.filter(user=request.user.id)
+        self.user_orders = UserOrders.objects.filter(user=request.user.id,
+                                                     procedure=Procedures.objects.get(proc_number=int(kwargs['proc_num'])))
+        print(self.user_orders, len(self.user_orders))
         return super().get(self, request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         print(self.kwargs['proc_num'])
-        try:
-            orders = UserOrders.objects.get_or_create(user=User.objects.get(pk=request.user.id), 
-                                            procedure=Procedures.objects.get(proc_number=self.kwargs['proc_num']),
-                                            my_org = UserOrgs.objects.get(user=request.user.id))
-        except UserOrders.DoesNotExist: 
-            print('Nope')
-        # orders.
-        return redirect(request.path_info) 
+        print(request.POST)
+        form = UserOrdersForm(request.POST)
+        new_order = UserOrders(user=User.objects.get(pk=request.user.id),
+                            procedure=Procedures.objects.get(proc_number=int(self.kwargs['proc_num'])),
+                            my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
+                            amount=request.POST['amount'],
+                            comment=request.POST['comment'],
+                            win='win'in request.POST
+                            )
+        new_order.save()
+        print(new_order.__dict__)
+        return redirect(request.path_info)
