@@ -348,3 +348,6 @@ class UserOrders(models.Model):
 class UserOrgs(models.Model):
     user = models.ForeignKey(User, models.CASCADE)
     name = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.name}'

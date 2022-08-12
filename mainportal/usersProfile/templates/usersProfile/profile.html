@@ -9,14 +9,30 @@
 {% endblock %}
 {% block body_right %}
 <h1>Профиль</h1>
-<form method="post">
-    {% csrf_token %}
-<table>
-{% for elem in form %}
-<tr><td>{{elem.label}}</td> <td>{{ elem }}</td></tr>
-{% endfor %}
-</table>
-<button type="submit" class="btn btn-primary">Сохранить</button>
-</form>
-
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6" style="background-color: #ffffff; text-align: center; min-height: 100%;">
+            <form method="post" name="qwe">
+            {% csrf_token %}
+                <table>
+                {% for elem in form_keys %}
+                <tr><td>{{elem.label}}</td> <td>{{ elem }}</td></tr>
+                {% endfor %}
+                </table>
+                <button type="submit" class="btn btn-primary" name="form_keys" value="qweqwe">Сохранить</button>
+            </form>
+        </div>
+        <div class="col-md-2" style="background-color: #ffffff; text-align: center; min-height: 100%;">
+            <form method="post">
+            {% csrf_token %}
+                {{ form_orgs.new.label }}
+                {{ form_orgs.new }}
+                <button type="submit" class="btn btn-primary" name="form_orgs" value="save">Сохранить</button>
+                {{ form_orgs.old.label }}
+                {{ form_orgs.old }}
+                <button type="submit" class="btn btn-primary" name="form_orgs" value="delete">Удалить</button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

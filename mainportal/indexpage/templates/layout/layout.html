@@ -25,7 +25,6 @@
 					<a style="position: relative; left: 0; bottom: 100" class="btn btn-dark" href="{% url 'login' %}">Login</a>
 					<a style="position: relative; left: 0; bottom: 100" class="btn btn-dark" href="{% url 'registration' %}">Registration</a>
 					{% endif %}
-
 				</div>
 			</div>
 		</div>
@@ -36,7 +35,6 @@
 					<a class="btn btn-dark" style="width: 170px" href="{% url 'interesting' %}">Интересные</a><br>
 					<a class="btn btn-dark" style="width: 170px" href="{% url 'recomend' %}">Рекомендованные</a><br>
 					<a class="btn btn-dark"  style="width: 170px" href="{% url 'completed' %}">Завершенные</a><br>
-					
 					{% block body_left %}
 					{% endblock %}
 				</div>
@@ -45,7 +43,6 @@
 					{% endblock %}
 				</div>
 			</div>
-			
 		  </div>
 	</body>
 </html>
