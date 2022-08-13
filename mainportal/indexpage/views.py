@@ -159,15 +159,15 @@ class ProcedureView(ListView):
                                 my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
                                 amount=request.POST['amount'],
                                 comment=request.POST['comment'],
-                                win='win'in request.POST
-                                )
+                                win='win'in request.POST)
         new_order.save()
     
-    def delete_order(self, order_id):
-        UserOrders.objects.filter(pk=order_id).delete()
+    def delete_order(self, order_id, user_id):
+        UserOrders.objects.filter(pk=order_id, user=user_id).delete()
 
     def update_order(self, request):
-        order = UserOrders.objects.get(pk=int(request.POST['update']))
+        order = UserOrders.objects.get(pk=int(request.POST['update'],
+                                       user=request.user.id))
         order.amount = request.POST['amount']
         order.comment = request.POST['comment']
         order.win = 'win' in request.POST
@@ -183,6 +183,6 @@ class ProcedureView(ListView):
             self.update_order(request)
             print('UPDATE')
         elif 'delete' in request.POST:
-            self.delete_order(int(request.POST['delete']))
+            self.delete_order(int(request.POST['delete']), request.user.id)
             print('DELETE')
         return redirect(request.path_info)

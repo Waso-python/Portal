@@ -51,12 +51,12 @@
         {% csrf_token %}
         <table>
             <h4>Организация: {{elem}}</h4>
-            <button type="submit" class="btn btn-danger" name="delete" value="{{elem.id}}">x</button>
+            <button type="submit" class="btn btn-danger" name="delete" value="{{elem.pk}}">x</button>
             <tr><td>{{ form.amount.label }} </td> <td> {{ form.amount }}</td></tr>
             <tr><td>{{ form.comment.label }} </td> <td> {{ form.comment }}</td></tr>
             <tr><td>{{ form.win.label }} </td> <td> {{ form.win }}</td></tr>
         </table>
-        <button type="submit" class="btn btn-primary" name="update" value="{{elem.id}}">Обновить</button>
+        <button type="submit" class="btn btn-primary" name="update" value="{{elem.pk}}">Обновить</button>
     </form> </br>
     {% endwith %}
     {% endfor %}

@@ -4,7 +4,7 @@ from statistics import mode
 from xml.etree.ElementTree import Comment
 from django.db import models
 from django.contrib.auth.models import User
-from .forms import UserOrdersForm
+from .forms import UserOrdersForm, UserContractsForm
 import datetime
 import hashlib
 
@@ -348,7 +348,9 @@ class UserOrders(models.Model):
     win = models.BooleanField(blank=True, null=True)
 
     def get_orders_form(self):
-        return UserOrdersForm(initial={'amount':self.amount, 'comment':self.comment, 'win':self.win})
+        return UserOrdersForm(initial={'amount':self.amount,
+                                       'comment':self.comment,
+                                       'win':self.win})
 
     def __str__(self):
         return f'{self.my_org}'
@@ -359,3 +361,21 @@ class UserOrgs(models.Model):
 
     def __str__(self):
         return f'{self.name}'
+
+# class UserContracts(models.Model):
+#     order = models.ForeignKey(UserOrders, models.CASCADE)
+#     contract_num = models.CharField(max_length=255, blank=True, null=True)
+#     contract_date = models.DateField(blank=True, null=True)
+#     deadline = models.DateField(blank=True, null=True)
+#     day_to_shipping = models.SmallIntegerField(blank=True, null=True)
+#     comment = models.CharField(max_length=1000, blank=True, null=True)
+
+#     def __str__(self):
+#         return f'{self.order.procedure}  {self.deadline}'
+
+#     def get_contracts_form(self):
+#         return UserContractsForm(initial={'contract_num': self.contract_num,
+#                                           'contract_date': self.contract_date,
+#                                           'deadline': self.deadline,
+#                                           'day_to_shipping': self.day_to_shipping,
+#                                           'comment': self.comment})
