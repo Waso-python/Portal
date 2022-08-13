@@ -38,8 +38,8 @@ class UpdateBase():
             entity = Procedures.objects.filter(proc_number=data.num_proc)[0]
         except IndexError:
             entity = Procedures()
-        # if (data_hash == entity.hash):
-        #     return
+        if (data_hash == entity.hash):
+            return
         entity.places=Marketplaces.objects.get(full_name='portal_providers')
         entity.proc_number=data.num_proc
         entity.law=self.get_obj(Laws, data.law_proc)
@@ -63,10 +63,10 @@ class UpdateBase():
         rawdata =  RawData.objects.filter(complete=0).values_list('num_proc')
         print(len(set(rawdata)))
         set(map(self.create_update_entity, set(rawdata)))
-        if len(rawdata) > 0:
-            cache_base.delay()
-            cache_old_base.delay()
-            rawdata.update(complete=1)
+        # if len(rawdata) > 0:
+        cache_base.delay()
+        cache_old_base.delay()
+        rawdata.update(complete=1)
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(rawdata)
 

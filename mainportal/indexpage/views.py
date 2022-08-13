@@ -1,7 +1,7 @@
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, ListView
 from .models import Interesting, Procedures, User, UserOrders, UserOrgs
-from .forms import UserOrdersForm
+from .forms import UserOrdersForm, UserOrgsForm
 from django.core.cache import cache
 from django.core.exceptions import FieldError
 
@@ -133,10 +133,12 @@ class ProcedureView(ListView):
             context.update({'procedure':procedure, 'page_name':'Procedure'})
         except IndexError:
             print('nope')
-        form = UserOrdersForm()
-        form.fields['my_org'].queryset = self.user_orgs
+        new_orders_form = UserOrdersForm()
+        my_org_form = UserOrgsForm()
+        my_org_form.fields['my_org'].queryset = self.user_orgs
         context.update({'page_name':'Procedure',
-                        'new_orders_form':form,
+                        'my_org_form':my_org_form,
+                        'new_orders_form':new_orders_form,
                         'orders':self.user_orders})
         return context
 
@@ -148,20 +150,39 @@ class ProcedureView(ListView):
         self.user_orgs = UserOrgs.objects.filter(user=request.user.id)
         self.user_orders = UserOrders.objects.filter(user=request.user.id,
                                                      procedure=Procedures.objects.get(proc_number=int(kwargs['proc_num'])))
-        print(self.user_orders, len(self.user_orders))
+        print(self.user_orders)
         return super().get(self, request, *args, **kwargs)
+
+    def new_order(self, request):
+        new_order = UserOrders(user=User.objects.get(pk=request.user.id),
+                                procedure=Procedures.objects.get(proc_number=int(self.kwargs['proc_num'])),
+                                my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
+                                amount=request.POST['amount'],
+                                comment=request.POST['comment'],
+                                win='win'in request.POST
+                                )
+        new_order.save()
+    
+    def delete_order(self, order_id):
+        UserOrders.objects.filter(pk=order_id).delete()
+
+    def update_order(self, request):
+        order = UserOrders.objects.get(pk=int(request.POST['update']))
+        order.amount = request.POST['amount']
+        order.comment = request.POST['comment']
+        order.win = 'win' in request.POST
+        order.save()
 
     def post(self, request, *args, **kwargs):
         print(self.kwargs['proc_num'])
         print(request.POST)
-        form = UserOrdersForm(request.POST)
-        new_order = UserOrders(user=User.objects.get(pk=request.user.id),
-                            procedure=Procedures.objects.get(proc_number=int(self.kwargs['proc_num'])),
-                            my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
-                            amount=request.POST['amount'],
-                            comment=request.POST['comment'],
-                            win='win'in request.POST
-                            )
-        new_order.save()
-        print(new_order.__dict__)
+        if 'add' in request.POST:
+            self.new_order(request)
+            print('ADD')
+        elif 'update' in request.POST:
+            self.update_order(request)
+            print('UPDATE')
+        elif 'delete' in request.POST:
+            self.delete_order(int(request.POST['delete']))
+            print('DELETE')
         return redirect(request.path_info)

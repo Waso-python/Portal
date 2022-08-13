@@ -348,10 +348,10 @@ class UserOrders(models.Model):
     win = models.BooleanField(blank=True, null=True)
 
     def get_orders_form(self):
-        return UserOrdersForm(initial=self)
+        return UserOrdersForm(initial={'amount':self.amount, 'comment':self.comment, 'win':self.win})
 
     def __str__(self):
-        return f'{self.user}  {self.procedure}  {self.my_org}'
+        return f'{self.my_org}'
 
 class UserOrgs(models.Model):
     user = models.ForeignKey(User, models.CASCADE)

@@ -37,7 +37,7 @@
 		{% for elem in object_list %}
 			<tr>
 				<td><a href="{{ elem.link|safe }}" target="_blank">{{ elem.places__full_name|safe }}</a></td>
-				<td><a href="{% url 'procedure' elem.proc_number|safe %}" target="_blank">{{ elem.proc_number|safe }}</a></td>
+				<td><a href="{% url 'procedure' elem.proc_number|safe %}">{{ elem.proc_number|safe }}</a></td>
 				<td>{{ elem.law__full_name|safe }}</td>
 				<td>{{ elem.type_proc__full_name|safe }}</td>
 				<td>{{ elem.orgs__full_name|safe }}</td>
