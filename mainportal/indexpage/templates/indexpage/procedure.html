@@ -46,19 +46,40 @@
         </div>
     </div>
     {% for elem in orders %}
-    {% with elem.get_orders_form as form %}
-    <form style="background-color: #c1b2b2" method="post">
-        {% csrf_token %}
-        <table>
-            <h4>Организация: {{elem}}</h4>
-            <button type="submit" class="btn btn-danger" name="delete" value="{{elem.pk}}">x</button>
-            <tr><td>{{ form.amount.label }} </td> <td> {{ form.amount }}</td></tr>
-            <tr><td>{{ form.comment.label }} </td> <td> {{ form.comment }}</td></tr>
-            <tr><td>{{ form.win.label }} </td> <td> {{ form.win }}</td></tr>
-        </table>
-        <button type="submit" class="btn btn-primary" name="update" value="{{elem.pk}}">Обновить</button>
-    </form> </br>
-    {% endwith %}
+    <div class="row">
+        <div class="col-md-6" style="background-color: #ffffff; min-height: 100%;">
+            {% with elem.get_orders_form as form %}
+            <form style="background-color: #c1b2b2" method="post">
+                {% csrf_token %}
+                <table>
+                    <h4>Организация: {{elem}}</h4>
+                    <button style="text-align: center;" type="submit" class="btn btn-danger" name="delete" value="{{elem.pk}}">x</button>
+                    <tr><td>{{ form.amount.label }} </td> <td> {{ form.amount }}</td></tr>
+                    <tr><td>{{ form.comment.label }} </td> <td> {{ form.comment }}</td></tr>
+                    <tr><td>{{ form.win.label }} </td> <td> {{ form.win }}</td></tr>
+                </table>
+                <button type="submit" class="btn btn-primary" name="update" value="{{elem.pk}}">Обновить</button>
+            </form>
+            {% endwith %}
+        </div>
+        {% if elem.win %}
+        <div class="col-md-6" style="background-color: #ffffff; min-height: 100%;">
+            {% with elem.get_contracts_form as form %}
+            <form style="background-color: #9c8686" method="post">
+                {% csrf_token %}
+                <table>
+                    <tr><td>{{ form.contract_num.label }}</td><td>{{ form.contract_num }}</td></tr>
+                    <tr><td>{{ form.contract_date.label }}</td><td>{{ form.contract_date }}</td></tr>
+                    <tr><td>{{ form.deadline.label }}</td><td>{{ form.deadline }}</td></tr>
+                    <tr><td>{{ form.day_to_shipping.label }}</td><td>{{ form.day_to_shipping }}</td></tr>
+                    <tr><td>{{ form.comment.label }}</td><td>{{ form.comment }}</td></tr>
+                </table>
+                <button type="submit" class="btn btn-primary" name="update_contract" value="{{elem.pk}}">Обновить</button>
+            </form>
+            {% endwith %}
+        </div>
+        {% endif %}
+    </div></br>
     {% endfor %}
 </div>
 {% endblock %}

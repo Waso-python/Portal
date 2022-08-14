@@ -342,7 +342,7 @@ class Interesting(models.Model):
 class UserOrders(models.Model):
     user = models.ForeignKey(User, models.CASCADE)
     procedure = models.ForeignKey(Procedures, models.DO_NOTHING)
-    my_org = models.ForeignKey('UserOrgs', models.DO_NOTHING)
+    my_org = models.ForeignKey('UserOrgs', models.CASCADE)
     amount = models.CharField(max_length=255, blank=True, null=True)
     comment = models.CharField(max_length=1024, blank=True, null=True)
     win = models.BooleanField(blank=True, null=True)
@@ -351,6 +351,14 @@ class UserOrders(models.Model):
         return UserOrdersForm(initial={'amount':self.amount,
                                        'comment':self.comment,
                                        'win':self.win})
+
+    def get_contracts_form(self):
+        contract = UserContracts.objects.get(order=self)
+        return UserContractsForm(initial={'contract_num': contract.contract_num,
+                                          'contract_date': contract.contract_date,
+                                          'deadline': contract.deadline,
+                                          'day_to_shipping': contract.day_to_shipping,
+                                          'comment': contract.comment})
 
     def __str__(self):
         return f'{self.my_org}'
@@ -362,20 +370,13 @@ class UserOrgs(models.Model):
     def __str__(self):
         return f'{self.name}'
 
-# class UserContracts(models.Model):
-#     order = models.ForeignKey(UserOrders, models.CASCADE)
-#     contract_num = models.CharField(max_length=255, blank=True, null=True)
-#     contract_date = models.DateField(blank=True, null=True)
-#     deadline = models.DateField(blank=True, null=True)
-#     day_to_shipping = models.SmallIntegerField(blank=True, null=True)
-#     comment = models.CharField(max_length=1000, blank=True, null=True)
+class UserContracts(models.Model):
+    order = models.ForeignKey(UserOrders, models.CASCADE)
+    contract_num = models.CharField(max_length=255, blank=True, null=True)
+    contract_date = models.DateField(blank=True, null=True)
+    deadline = models.DateField(blank=True, null=True)
+    day_to_shipping = models.SmallIntegerField(blank=True, null=True)
+    comment = models.CharField(max_length=1000, blank=True, null=True)
 
-#     def __str__(self):
-#         return f'{self.order.procedure}  {self.deadline}'
-
-#     def get_contracts_form(self):
-#         return UserContractsForm(initial={'contract_num': self.contract_num,
-#                                           'contract_date': self.contract_date,
-#                                           'deadline': self.deadline,
-#                                           'day_to_shipping': self.day_to_shipping,
-#                                           'comment': self.comment})
+    def __str__(self):
+        return f'{self.order.procedure}  {self.deadline}'

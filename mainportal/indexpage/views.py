@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, ListView
-from .models import Interesting, Procedures, User, UserOrders, UserOrgs
+from .models import Interesting, Procedures, User, UserOrders, UserOrgs, UserContracts
 from .forms import UserOrdersForm, UserOrgsForm
 from django.core.cache import cache
 from django.core.exceptions import FieldError
@@ -161,17 +161,31 @@ class ProcedureView(ListView):
                                 comment=request.POST['comment'],
                                 win='win'in request.POST)
         new_order.save()
+        UserContracts(order=new_order).save()
     
     def delete_order(self, order_id, user_id):
         UserOrders.objects.filter(pk=order_id, user=user_id).delete()
 
     def update_order(self, request):
-        order = UserOrders.objects.get(pk=int(request.POST['update'],
-                                       user=request.user.id))
+        order = UserOrders.objects.get(pk=int(request.POST['update']),
+                                       user=request.user.id)
         order.amount = request.POST['amount']
         order.comment = request.POST['comment']
         order.win = 'win' in request.POST
         order.save()
+    
+    def update_contract(self, request):
+        contract = UserContracts.objects.get(order=UserOrders.objects.get(pk=int(request.POST['update_contract']),
+                                                                          user=request.user.id))
+        contract.contract_num = request.POST['contract_num']
+        if request.POST['contract_date']:
+            contract.contract_date= request.POST['contract_date']
+        if request.POST['deadline']:
+            contract.deadline = request.POST['deadline']
+        if request.POST['day_to_shipping']:
+            contract.day_to_shipping = int(request.POST['day_to_shipping'])
+        contract.comment = request.POST['comment']
+        contract.save()
 
     def post(self, request, *args, **kwargs):
         print(self.kwargs['proc_num'])
@@ -185,4 +199,6 @@ class ProcedureView(ListView):
         elif 'delete' in request.POST:
             self.delete_order(int(request.POST['delete']), request.user.id)
             print('DELETE')
+        # elif 'update_contract' in request.POST:
+        #     self.update_contract(request)
         return redirect(request.path_info)

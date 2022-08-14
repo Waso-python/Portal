@@ -10,7 +10,7 @@ class UserOrdersForm(forms.Form):
 
 class UserContractsForm(forms.Form):
     contract_num = forms.CharField(label='Сумма', max_length=255, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
-    contract_date = forms.DateField(label='Дата контракта' ,required=False)
-    deadline = forms.DateField(label='Крайний срок поставки', required=False)
+    contract_date = forms.DateField(label='Дата контракта', widget=forms.SelectDateWidget(), required=False)
+    deadline = forms.DateField(label='Крайний срок поставки', widget=forms.SelectDateWidget(), required=False)
     day_to_shipping = forms.IntegerField(label='Дней на поставку', required=False)
     comment = forms.CharField(label='Коментарий', max_length=1000, widget=forms.Textarea(attrs={'cols': 50, 'rows': 3}), required=False)
