@@ -28,15 +28,15 @@
 				</div>
 			</div>
 		</div>
-		  <div class="container-fluid">
-			<div class="row">
-				<div class="col-md-1" style="background-color: #404040; text-align: center; min-height: 100%;">
-					<a class="btn btn-dark" style="width: 170px" href="{% url 'base' %}">Закупки</a><br>
-					<a class="btn btn-dark" style="width: 170px" href="{% url 'interesting' %}">Интересные</a><br>
-					<a class="btn btn-dark" style="width: 170px" href="{% url 'recomend' %}">Рекомендованные</a><br>
-					<a class="btn btn-dark"  style="width: 170px" href="{% url 'completed' %}">Завершенные</a><br>
-					{% block body_left %}
-					{% endblock %}
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-1" style="background-color: #404040; text-align: center; min-height: 100%;">
+						<a class="btn btn-dark" style="width: 170px" href="{% url 'base' %}">Закупки</a><br>
+						<a class="btn btn-dark" style="width: 170px" href="{% url 'interesting' %}">Интересные</a><br>
+						<a class="btn btn-dark" style="width: 170px" href="{% url 'recomend' %}">Рекомендованные</a><br>
+						<a class="btn btn-dark"  style="width: 170px" href="{% url 'completed' %}">Завершенные</a><br>
+						{% block body_left %}
+						{% endblock %}
 				</div>
 				<div class="col-md-11" style="background-color: #ffffff;">
 					{% block body_right %}
