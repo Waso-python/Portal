@@ -1,7 +1,8 @@
 from django.shortcuts import redirect
+from django.urls import is_valid_path
 from django.views.generic import TemplateView, ListView
 from .models import Interesting, Procedures, User, UserOrders, UserOrgs, UserContracts
-from .forms import UserOrdersForm, UserOrgsForm
+from .forms import UserContractsForm, UserOrdersForm, UserOrgsForm
 from django.core.cache import cache
 from django.core.exceptions import FieldError
 
@@ -145,47 +146,51 @@ class ProcedureView(ListView):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
-        print(kwargs['proc_num'], type(kwargs['proc_num']))
+        # print(kwargs['proc_num'], type(kwargs['proc_num']))
         self.proc_number = kwargs['proc_num']
         self.user_orgs = UserOrgs.objects.filter(user=request.user.id)
         self.user_orders = UserOrders.objects.filter(user=request.user.id,
                                                      procedure=Procedures.objects.get(proc_number=int(kwargs['proc_num'])))
-        print(self.user_orders)
+        # print(self.user_orders)
         return super().get(self, request, *args, **kwargs)
 
     def new_order(self, request):
-        new_order = UserOrders(user=User.objects.get(pk=request.user.id),
-                                procedure=Procedures.objects.get(proc_number=int(self.kwargs['proc_num'])),
-                                my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
-                                amount=request.POST['amount'],
-                                comment=request.POST['comment'],
-                                win='win'in request.POST)
-        new_order.save()
-        UserContracts(order=new_order).save()
-    
+        form_orders = UserOrdersForm(request.POST)
+        print(form_orders, type(form_orders) )
+        if form_orders.is_valid():
+            new_order = UserOrders(user=User.objects.get(pk=request.user.id),
+                                    procedure=Procedures.objects.get(proc_number=int(self.kwargs['proc_num'])),
+                                    my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
+                                    amount=form_orders.cleaned_data['amount'],
+                                    comment=form_orders.cleaned_data['comment'],
+                                    win='win'in request.POST)
+            new_order.save()
+            UserContracts(order=new_order).save()
+
     def delete_order(self, order_id, user_id):
         UserOrders.objects.filter(pk=order_id, user=user_id).delete()
 
     def update_order(self, request):
-        order = UserOrders.objects.get(pk=int(request.POST['update']),
-                                       user=request.user.id)
-        order.amount = request.POST['amount']
-        order.comment = request.POST['comment']
-        order.win = 'win' in request.POST
-        order.save()
+        form = UserOrdersForm(request.POST)
+        if form.is_valid():
+            order = UserOrders.objects.get(pk=int(request.POST['update']),
+                                        user=request.user.id)
+            order.amount = form.cleaned_data['amount']
+            order.comment = form.cleaned_data['comment']
+            order.win = 'win' in request.POST
+            order.save()
     
     def update_contract(self, request):
         contract = UserContracts.objects.get(order=UserOrders.objects.get(pk=int(request.POST['update_contract']),
                                                                           user=request.user.id))
         contract.contract_num = request.POST['contract_num']
-        if request.POST['contract_date']:
-            contract.contract_date= request.POST['contract_date']
-        if request.POST['deadline']:
-            contract.deadline = request.POST['deadline']
-        if request.POST['day_to_shipping']:
-            contract.day_to_shipping = int(request.POST['day_to_shipping'])
-        contract.comment = request.POST['comment']
-        contract.save()
+        form = UserContractsForm(request.POST)
+        if form.is_valid(): 
+            contract.contract_date= form.cleaned_data['contract_date']
+            contract.deadline = form.cleaned_data['deadline']
+            contract.day_to_shipping = form.cleaned_data['day_to_shipping']
+            contract.comment = form.cleaned_data['comment']
+            contract.save()
 
     def post(self, request, *args, **kwargs):
         print(self.kwargs['proc_num'])
@@ -199,6 +204,6 @@ class ProcedureView(ListView):
         elif 'delete' in request.POST:
             self.delete_order(int(request.POST['delete']), request.user.id)
             print('DELETE')
-        # elif 'update_contract' in request.POST:
-        #     self.update_contract(request)
+        elif 'update_contract' in request.POST:
+            self.update_contract(request)
         return redirect(request.path_info)
