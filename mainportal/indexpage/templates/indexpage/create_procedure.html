@@ -1,0 +1,16 @@
+{% extends 'layout/layout.html' %}
+
+{% block head %}
+<title>shablon</title>
+{% endblock %}
+<!-- -------------------------------------------------------------------- -->
+{% block body_left %}
+
+{% endblock %}
+{% block body_right %}
+<h1>Добавление процедуры</h1>
+<form method="post">
+{% csrf_token %}
+{{form}}
+</form>
+{% endblock %}

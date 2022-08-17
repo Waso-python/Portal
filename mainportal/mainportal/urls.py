@@ -16,7 +16,6 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
-from .tasks import upd_base
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,6 +29,4 @@ if settings.DEBUG:
     urlpatterns += [
         path('_debug_/', include(debug_toolbar.urls)),
     ]
-
-# upd_base()
 

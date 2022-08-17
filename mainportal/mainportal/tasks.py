@@ -63,10 +63,10 @@ class UpdateBase():
         rawdata =  RawData.objects.filter(complete=0).values_list('num_proc')
         print(len(set(rawdata)))
         set(map(self.create_update_entity, set(rawdata)))
-        # if len(rawdata) > 0:
-        cache_base.delay()
-        cache_old_base.delay()
-        rawdata.update(complete=1)
+        if len(rawdata) > 0:
+            cache_base.delay()
+            cache_old_base.delay()
+            rawdata.update(complete=1)
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(rawdata)
 
@@ -115,6 +115,3 @@ def cache_recomend(user_id):
 @app.task()
 def upd_base():
     UpdateBase().do()
-
-
-# ('компьютер', 'принтер', 'заправка', 'картридж', 'подароч', 'комплектующ', 'ноутбук')

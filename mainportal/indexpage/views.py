@@ -1,19 +1,10 @@
 from django.shortcuts import redirect
 from django.urls import is_valid_path
-from django.views.generic import TemplateView, ListView
+from django.views.generic import ListView, CreateView
 from .models import Interesting, Procedures, User, UserOrders, UserOrgs, UserContracts
 from .forms import UserContractsForm, UserOrdersForm, UserOrgsForm
 from django.core.cache import cache
 from django.core.exceptions import FieldError
-
-class IndexPageView(TemplateView):
-    template_name = 'indexpage/index.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({'key':'value'}) #content to send to template
-        return context
-
 
 class FullBase(ListView):
     template_name = 'indexpage/base.html'
@@ -128,8 +119,9 @@ class ProcedureView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            procedure = Procedures.objects.filter(proc_number=self.proc_number).values('id', 'places__full_name', 'proc_number', 'law__full_name', 
-                    'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
+            procedure = Procedures.objects.filter(proc_number=self.proc_number).values('id', 'places__full_name',
+                    'proc_number', 'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'orgs__inn',
+                    'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')[0]
             context.update({'procedure':procedure, 'page_name':'Procedure'})
         except IndexError:
@@ -150,13 +142,13 @@ class ProcedureView(ListView):
         self.proc_number = kwargs['proc_num']
         self.user_orgs = UserOrgs.objects.filter(user=request.user.id)
         self.user_orders = UserOrders.objects.filter(user=request.user.id,
-                                                     procedure=Procedures.objects.get(proc_number=int(kwargs['proc_num'])))
+                                                     procedure__proc_number=int(kwargs['proc_num'])).order_by('-pk')
         # print(self.user_orders)
         return super().get(self, request, *args, **kwargs)
 
     def new_order(self, request):
         form_orders = UserOrdersForm(request.POST)
-        print(form_orders, type(form_orders) )
+        print(form_orders, type(form_orders))
         if form_orders.is_valid():
             new_order = UserOrders(user=User.objects.get(pk=request.user.id),
                                     procedure=Procedures.objects.get(proc_number=int(self.kwargs['proc_num'])),
@@ -185,7 +177,7 @@ class ProcedureView(ListView):
                                                                           user=request.user.id))
         contract.contract_num = request.POST['contract_num']
         form = UserContractsForm(request.POST)
-        if form.is_valid(): 
+        if form.is_valid():
             contract.contract_date= form.cleaned_data['contract_date']
             contract.deadline = form.cleaned_data['deadline']
             contract.day_to_shipping = form.cleaned_data['day_to_shipping']
@@ -207,3 +199,8 @@ class ProcedureView(ListView):
         elif 'update_contract' in request.POST:
             self.update_contract(request)
         return redirect(request.path_info)
+
+# class CreateProcedure(CreateView):
+#     model = Procedures
+#     fields = ['places', 'proc_number',   'orgs']# 'subject', 'tradeplace', 'stage', 'link', 'deal_count', 'region']
+#     template_name = 'indexpage/create_procedure.html'
