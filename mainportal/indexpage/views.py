@@ -73,13 +73,13 @@ class RecomendBase(ListView):
 
 
 class InterestingBase(ListView):
-    template_name = 'indexpage/base.html'
+    template_name = 'indexpage/work.html'
     model = Procedures
     paginate_by = 10
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_name'] = 'Interesting'
+        context['page_name'] = 'В Работе'
         try:
             context['inter_list'] = self.queryset.values_list('proc_number', flat=True)
         except (IndexError, FieldError):
@@ -145,7 +145,7 @@ class ProcedureView(ListView):
         self.proc_number = kwargs['proc_num']
         self.user_orgs = UserOrgs.objects.filter(user=request.user.id)
         self.user_orders = UserOrders.objects.filter(user=request.user.id,
-                                                     procedure__proc_number=int(kwargs['proc_num'])).order_by('-pk')
+                                                     procedure__proc_number=kwargs['proc_num']).order_by('-pk')
         # print(self.user_orders)
         return super().get(self, request, *args, **kwargs)
 
@@ -154,7 +154,7 @@ class ProcedureView(ListView):
         print(form_orders, type(form_orders))
         if form_orders.is_valid():
             new_order = UserOrders(user=User.objects.get(pk=request.user.id),
-                                    procedure=Procedures.objects.get(proc_number=int(self.kwargs['proc_num'])),
+                                    procedure=Procedures.objects.get(proc_number=self.kwargs['proc_num']),
                                     my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
                                     amount=form_orders.cleaned_data['amount'],
                                     comment=form_orders.cleaned_data['comment'],
@@ -212,12 +212,16 @@ class CreateProcedure(ListView, UpdateBase):
         context = super().get_context_data(**kwargs)
         context.update({'form':ProceduresForm()})
         return context
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        return super().get(self, request, *args, **kwargs)
     
     def post(self, request, *args, **kwargs):
         print(request.POST)
         form = ProceduresForm(request.POST)
         if form.is_valid():
-            print('is valid')
             procedure = Procedures(places = self.get_obj(Marketplaces, form.cleaned_data['places']),
                                    proc_number = f'{form.cleaned_data["proc_number"]}<-!->{"".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}',
                                    law = self.get_obj(Laws, form.cleaned_data['law']),
@@ -239,8 +243,7 @@ class CreateProcedure(ListView, UpdateBase):
             print(procedure)
             try:
                 inter = Interesting.objects.get(user=request.user.id)
-                print('have inter')
             except Interesting.DoesNotExist:
                 inter = Interesting(user=User.objects.get(id=request.user.id)).save()
             inter.procedure.add(*procedure)
-        return redirect(request.path_info)
+        return redirect('interesting')
