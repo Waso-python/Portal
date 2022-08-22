@@ -283,6 +283,7 @@ class Procedures(models.Model):
     deal_count = models.IntegerField()
     region = models.ForeignKey('Region', models.DO_NOTHING, blank=True, null=True)
     hash = models.CharField(max_length=200, null=True)
+    personal = models.BooleanField(default=False, blank=True, null=True)
 
     def __str__(self) -> str:
         return f'{self.id} - {self.proc_number} - {self.subject}'
@@ -302,8 +303,8 @@ class Stages(models.Model):
 
 
 class Tradeplaces(models.Model):
-    full_name = models.CharField(max_length=512)
-    link = models.CharField(max_length=521)
+    full_name = models.CharField(max_length=512, null=True, blank=True)
+    link = models.CharField(max_length=521, null=True, blank=True)
 
     def __str__(self) -> str:
         return f'{self.id} - {self.full_name}'

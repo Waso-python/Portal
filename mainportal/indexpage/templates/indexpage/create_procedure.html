@@ -11,6 +11,11 @@
 <h1>Добавление процедуры</h1>
 <form method="post">
 {% csrf_token %}
-{{form}}
+<table>
+{% for elem in form %}
+<tr><td>{{ elem.label }}</td><td> {{ elem }}</td></tr>
+{% endfor %}
+</table>
+<button type="submit" class="btn btn-primary">Добавить</button>
 </form>
 {% endblock %}

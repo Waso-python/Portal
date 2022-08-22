@@ -1,4 +1,3 @@
-from ast import keyword
 from indexpage.models import *
 from usersProfile.models import ProfileUserModel
 from datetime import datetime
@@ -17,7 +16,7 @@ class UpdateBase():
     def get_obj(self, model, value):
         try:
             obj = model.objects.get(full_name=value)
-        except:
+        except model.DoesNotExist:
             obj = model.objects.create(full_name=value)
         return obj
 
@@ -25,7 +24,7 @@ class UpdateBase():
         org_inn = ''.join([i if i.isdigit() else '' for i in partner.split(':')[1]])
         try:
             obj = Orgs.objects.get(inn=org_inn)
-        except:
+        except Orgs.DoesNotExist:
             org_name = partner.split('(')[0]
             obj = Orgs.objects.create(full_name=org_name, inn=org_inn)
         return obj
@@ -40,7 +39,7 @@ class UpdateBase():
             entity = Procedures()
         if (data_hash == entity.hash):
             return
-        entity.places=Marketplaces.objects.get(full_name='portal_providers')
+        entity.places=self.get_obj(Marketplaces, 'portal_providers')
         entity.proc_number=data.num_proc
         entity.law=self.get_obj(Laws, data.law_proc)
         entity.type_proc=self.get_obj(TypesProc, data.type_proc)
@@ -49,8 +48,8 @@ class UpdateBase():
         entity.date_start=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
         entity.date_end=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
         entity.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
-        entity.tradeplace=Tradeplaces.objects.get(full_name='portal_providers')
-        entity.stage=self.get_obj(Stages, data.status)
+        entity.tradeplace=self.get_obj(Tradeplaces, 'portal_providers')
+        entity.stage=self.get_obj(Stages, data.status) 
         entity.link=data.link_proc
         entity.deal_count=int(data.count_order) if data.count_order else 0
         entity.region=self.get_obj(Region, data.region)
@@ -72,7 +71,7 @@ class UpdateBase():
 
 @app.task()
 def cache_base():
-    cache.set('BASE', list(Procedures.objects.filter(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
+    cache.set('BASE', list(Procedures.objects.filter(date_proc__gte = datetime.today(), personal=False).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
                     'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')), None)
     users_id = ProfileUserModel.objects.all().values('user')
@@ -81,7 +80,7 @@ def cache_base():
 
 @app.task()
 def cache_old_base():
-    cache.set('OLD_BASE', list(Procedures.objects.exclude(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 
+    cache.set('OLD_BASE', list(Procedures.objects.filter(personal=False).exclude(date_proc__gte = datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 
                     'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')), None)
 

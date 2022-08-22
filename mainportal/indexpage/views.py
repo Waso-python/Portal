@@ -1,15 +1,17 @@
+import random
+import string
 from django.shortcuts import redirect
-from django.urls import is_valid_path
-from django.views.generic import ListView, CreateView
-from .models import Interesting, Procedures, User, UserOrders, UserOrgs, UserContracts
-from .forms import UserContractsForm, UserOrdersForm, UserOrgsForm
+from django.views.generic import ListView
+from .models import Interesting, Laws, Marketplaces, Orgs, Procedures, Region, Stages, Tradeplaces, TypesProc, User, UserOrders, UserOrgs, UserContracts
+from .forms import UserContractsForm, UserOrdersForm, UserOrgsForm, ProceduresForm
 from django.core.cache import cache
 from django.core.exceptions import FieldError
+from mainportal.tasks import UpdateBase
 
 class FullBase(ListView):
     template_name = 'indexpage/base.html'
     paginate_by = 100
-    queryset = cache.get('BASE')
+    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -27,13 +29,13 @@ class FullBase(ListView):
         if not request.user.is_authenticated:
             return redirect('login')
         self.user_id = request.user.id
+        self.queryset = cache.get('BASE')
         return super().get(self, request, *args, **kwargs)
 
 
 class OldBase(ListView):
     template_name = 'indexpage/base.html'
     paginate_by = 100
-    queryset = cache.get('OLD_BASE')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -43,6 +45,7 @@ class OldBase(ListView):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
+        self.queryset = cache.get('OLD_BASE')
         return super().get(self, request, *args, **kwargs)
 
 class RecomendBase(ListView):
@@ -90,7 +93,7 @@ class InterestingBase(ListView):
             self.queryset = Interesting.objects.get(user=request.user.id).procedure.all().values('id', 'places__full_name', 'proc_number', 'law__full_name', 
                     'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')
-        except Exception as e:
+        except Interesting.DoesNotExist as e:
             print('ERROR' + str(e))
             self.queryset = Interesting.objects.none()
         self.user_id = request.user.id
@@ -200,7 +203,44 @@ class ProcedureView(ListView):
             self.update_contract(request)
         return redirect(request.path_info)
 
-# class CreateProcedure(CreateView):
-#     model = Procedures
-#     fields = ['places', 'proc_number',   'orgs']# 'subject', 'tradeplace', 'stage', 'link', 'deal_count', 'region']
-#     template_name = 'indexpage/create_procedure.html'
+
+class CreateProcedure(ListView, UpdateBase):
+    model = Procedures
+    template_name = 'indexpage/create_procedure.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({'form':ProceduresForm()})
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        print(request.POST)
+        form = ProceduresForm(request.POST)
+        if form.is_valid():
+            print('is valid')
+            procedure = Procedures(places = self.get_obj(Marketplaces, form.cleaned_data['places']),
+                                   proc_number = f'{form.cleaned_data["proc_number"]}<-!->{"".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}',
+                                   law = self.get_obj(Laws, form.cleaned_data['law']),
+                                   type_proc = self.get_obj(TypesProc, form.cleaned_data['type_proc']),
+                                   orgs = self.get_obj(Orgs, form.cleaned_data['orgs']),
+                                   subject = form.cleaned_data['subject'],
+                                   date_start= form.cleaned_data['date_start'],
+                                   date_end = form.cleaned_data['date_end'],
+                                   date_proc = form.cleaned_data['date_proc'],
+                                   tradeplace = self.get_obj(Tradeplaces, form.cleaned_data['tradeplace']),
+                                   stage = self.get_obj(Stages, form.cleaned_data['stage']),
+                                   link = form.cleaned_data['link'],
+                                   deal_count=  form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0,
+                                   region= self.get_obj(Region, form.cleaned_data['region']),
+                                   personal = True)
+            print(procedure.id)
+            procedure.save()
+            procedure = Procedures.objects.filter(id=procedure.id)
+            print(procedure)
+            try:
+                inter = Interesting.objects.get(user=request.user.id)
+                print('have inter')
+            except Interesting.DoesNotExist:
+                inter = Interesting(user=User.objects.get(id=request.user.id)).save()
+            inter.procedure.add(*procedure)
+        return redirect(request.path_info)
