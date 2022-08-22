@@ -29,6 +29,12 @@
                 <tr><td>{{ procedure.deal_count|safe }}</tr></td>
                 <tr><td>{{ procedure.region__full_name|safe }}</tr></td>
             </table>
+            {% elif form_procedure %}
+            <table>
+            {% for elem in form_procedure %}
+            <tr><td>{{ elem.label }}</td><td>{{ elem }}</td></tr>
+            {% endfor %}
+            </table>
             {% else %}
             <h2>No Data</h2>
             {% endif %}

@@ -115,18 +115,19 @@ class InterestingBase(ListView):
             inter.procedure.add(*Procedures.objects.filter(pk=request.GET.get('pk')))
         return redirect(request.GET.get('next'))
 
+
 class ProcedureView(ListView):
     template_name = 'indexpage/procedure.html'
     model = Procedures
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_general_context(self, **kwargs):
+        context: dict = kwargs['sup']
         try:
             procedure = Procedures.objects.filter(proc_number=self.proc_number).values('id', 'places__full_name',
                     'proc_number', 'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'orgs__inn',
                     'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')[0]
-            context.update({'procedure':procedure, 'page_name':'Procedure'})
+            context.update({'procedure':procedure})
         except IndexError:
             print('nope')
         new_orders_form = UserOrdersForm()
@@ -138,10 +139,33 @@ class ProcedureView(ListView):
                         'orders':self.user_orders})
         return context
 
+    def get_personal_context(self, **kwargs):
+        context: dict = kwargs['sup']
+        try:
+            procedure = Procedures.objects.filter(proc_number=self.proc_number).select_related('type_proc__fullname').values('type_proc')[0]
+            form = ProceduresForm(procedure)
+            context.update({'form_procedure':form})
+        except IndexError as e:
+            print('IndexError', e)
+        new_orders_form = UserOrdersForm()
+        my_org_form = UserOrgsForm()
+        my_org_form.fields['my_org'].queryset = self.user_orgs
+        context.update({'page_name':'Procedure',
+                        'my_org_form':my_org_form,
+                        'new_orders_form':new_orders_form,
+                        'orders':self.user_orders})
+        return context
+
+    def get_context_data(self, **kwargs):
+        procedure = Procedures.objects.get(proc_number=self.proc_number)
+        if procedure.personal == False:
+            return self.get_general_context(sup=super().get_context_data(**kwargs))
+        else:
+            return self.get_personal_context(sup=super().get_context_data(**kwargs))
+
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
-        # print(kwargs['proc_num'], type(kwargs['proc_num']))
         self.proc_number = kwargs['proc_num']
         self.user_orgs = UserOrgs.objects.filter(user=request.user.id)
         self.user_orders = UserOrders.objects.filter(user=request.user.id,
@@ -218,7 +242,7 @@ class CreateProcedure(ListView, UpdateBase):
             return redirect('login')
         return super().get(self, request, *args, **kwargs)
     
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         print(request.POST)
         form = ProceduresForm(request.POST)
         if form.is_valid():

@@ -288,6 +288,10 @@ class Procedures(models.Model):
     def __str__(self) -> str:
         return f'{self.id} - {self.proc_number} - {self.subject}'
 
+    def get_dict(self):
+        return {}
+
+
     class Meta:
         db_table = 'procedures'
 
