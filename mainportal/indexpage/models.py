@@ -4,7 +4,7 @@ from statistics import mode
 from xml.etree.ElementTree import Comment
 from django.db import models
 from django.contrib.auth.models import User
-from .forms import UserOrdersForm, UserContractsForm
+from indexpage.forms import UserOrdersForm, UserContractsForm
 import datetime
 import hashlib
 
@@ -288,9 +288,24 @@ class Procedures(models.Model):
     def __str__(self) -> str:
         return f'{self.id} - {self.proc_number} - {self.subject}'
 
-    def get_dict(self):
-        return {}
+    def get_form_dict(self):
+        return {'places':self.places.full_name,
+                'proc_number':self.personal_proc_num(), 
+                'law':self.law.full_name,
+                'type_proc':self.type_proc.full_name, 
+                'orgs':self.orgs.full_name, 
+                'subject':self.subject, 
+                'date_start':self.date_start,
+                'date_end':self.date_end,
+                'date_proc':self.date_proc,
+                'tradeplace':self.tradeplace.full_name, 
+                'stage':self.stage.full_name,
+                'link':self.link,
+                'deal_count':self.deal_count,
+                'region':self.region.full_name}
 
+    def personal_proc_num(self):
+        return self.proc_number.split('<-!->')[0]
 
     class Meta:
         db_table = 'procedures'

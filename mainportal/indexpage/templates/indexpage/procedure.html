@@ -30,11 +30,26 @@
                 <tr><td>{{ procedure.region__full_name|safe }}</tr></td>
             </table>
             {% elif form_procedure %}
-            <table>
-            {% for elem in form_procedure %}
-            <tr><td>{{ elem.label }}</td><td>{{ elem }}</td></tr>
-            {% endfor %}
-            </table>
+            <form method="post">
+                {% csrf_token %}
+                <table>
+                <tr><td>{{ form_procedure.places.label }}</td><td>{{ form_procedure.places }}</td></tr>
+                <tr><td>{{ form_procedure.proc_number.label }}</td><td>{{ form_procedure.proc_number }}</td></tr>
+                <tr><td>{{ form_procedure.law.label }}</td><td>{{ form_procedure.law }}</td></tr>
+                <tr><td>{{ form_procedure.type_proc.label }}</td><td>{{ form_procedure.type_proc }}</td></tr>
+                <tr><td>{{ form_procedure.orgs.label }}</td><td>{{ form_procedure.orgs }}</td></tr>
+                <tr><td>{{ form_procedure.subject.label }}</td><td>{{ form_procedure.subject }}</td></tr>
+                <tr><td>{{ form_procedure.date_start.label }}</td><td>{{ form_procedure.date_start }}</td></tr>
+                <tr><td>{{ form_procedure.date_end.label }}</td><td>{{ form_procedure.date_end }}</td></tr>
+                <tr><td>{{ form_procedure.date_proc.label }}</td><td>{{ form_procedure.date_proc }}</td></tr>
+                <tr><td>{{ form_procedure.tradeplace.label }}</td><td>{{ form_procedure.tradeplace }}</td></tr>
+                <tr><td>{{ form_procedure.stage.label }}</td><td>{{ form_procedure.stage }}</td></tr>
+                <tr><td>{{ form_procedure.link.label }}</td><td>{{ form_procedure.link }}</td></tr>
+                <tr><td>{{ form_procedure.deal_count.label }}</td><td>{{ form_procedure.deal_count }}</td></tr>
+                <tr><td>{{ form_procedure.region.label }}</td><td>{{ form_procedure.region }}</td></tr>
+                </table>
+                <button type="submit" class="btn btn-primary" name="update_procedure">Обновить</button>
+            </form>
             {% else %}
             <h2>No Data</h2>
             {% endif %}

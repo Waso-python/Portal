@@ -1,17 +1,22 @@
+from datetime import datetime, time
 import random
 import string
 from django.shortcuts import redirect
 from django.views.generic import ListView
-from .models import Interesting, Laws, Marketplaces, Orgs, Procedures, Region, Stages, Tradeplaces, TypesProc, User, UserOrders, UserOrgs, UserContracts
-from .forms import UserContractsForm, UserOrdersForm, UserOrgsForm, ProceduresForm
+from .models import (Interesting, Laws, Marketplaces, Orgs, Procedures,
+                     Region, Stages, Tradeplaces, TypesProc, User, UserOrders,
+                     UserOrgs, UserContracts)
+from .forms import UserContractsForm, UserOrdersForm, UserOrgsForm
+from .modelforms import ProceduresForm
 from django.core.cache import cache
 from django.core.exceptions import FieldError
 from mainportal.tasks import UpdateBase
+import pytz
+
 
 class FullBase(ListView):
     template_name = 'indexpage/base.html'
     paginate_by = 100
-    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -47,6 +52,7 @@ class OldBase(ListView):
             return redirect('login')
         self.queryset = cache.get('OLD_BASE')
         return super().get(self, request, *args, **kwargs)
+
 
 class RecomendBase(ListView):
     template_name = 'indexpage/base.html'
@@ -90,8 +96,8 @@ class InterestingBase(ListView):
         if not request.user.is_authenticated:
             return redirect('login')
         try:
-            self.queryset = Interesting.objects.get(user=request.user.id).procedure.all().values('id', 'places__full_name', 'proc_number', 'law__full_name', 
-                    'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
+            self.queryset = Interesting.objects.get(user=request.user.id).procedure.all().values('id', 'places__full_name', 'proc_number', 'law__full_name',
+                    'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name',
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')
         except Interesting.DoesNotExist as e:
             print('ERROR' + str(e))
@@ -125,35 +131,35 @@ class ProcedureView(ListView):
         try:
             procedure = Procedures.objects.filter(proc_number=self.proc_number).values('id', 'places__full_name',
                     'proc_number', 'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'orgs__inn',
-                    'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
+                    'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name',
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')[0]
-            context.update({'procedure':procedure})
-        except IndexError:
-            print('nope')
-        new_orders_form = UserOrdersForm()
-        my_org_form = UserOrgsForm()
-        my_org_form.fields['my_org'].queryset = self.user_orgs
-        context.update({'page_name':'Procedure',
-                        'my_org_form':my_org_form,
-                        'new_orders_form':new_orders_form,
-                        'orders':self.user_orders})
-        return context
-
-    def get_personal_context(self, **kwargs):
-        context: dict = kwargs['sup']
-        try:
-            procedure = Procedures.objects.filter(proc_number=self.proc_number).select_related('type_proc__fullname').values('type_proc')[0]
-            form = ProceduresForm(procedure)
-            context.update({'form_procedure':form})
+            context.update({'procedure': procedure})
         except IndexError as e:
             print('IndexError', e)
         new_orders_form = UserOrdersForm()
         my_org_form = UserOrgsForm()
         my_org_form.fields['my_org'].queryset = self.user_orgs
-        context.update({'page_name':'Procedure',
-                        'my_org_form':my_org_form,
-                        'new_orders_form':new_orders_form,
-                        'orders':self.user_orders})
+        context.update({'page_name': 'Procedure',
+                        'my_org_form': my_org_form,
+                        'new_orders_form': new_orders_form,
+                        'orders': self.user_orders})
+        return context
+
+    def get_personal_context(self, **kwargs):
+        context: dict = kwargs['sup']
+        try:
+            procedure = Procedures.objects.filter(proc_number=self.proc_number)[0]
+            form = ProceduresForm(procedure.get_form_dict())
+            context.update({'form_procedure': form})
+        except IndexError as e:
+            print('IndexError', e)
+        new_orders_form = UserOrdersForm()
+        my_org_form = UserOrgsForm()
+        my_org_form.fields['my_org'].queryset = self.user_orgs
+        context.update({'page_name': 'Procedure',
+                        'my_org_form': my_org_form,
+                        'new_orders_form': new_orders_form,
+                        'orders': self.user_orders})
         return context
 
     def get_context_data(self, **kwargs):
@@ -178,11 +184,12 @@ class ProcedureView(ListView):
         print(form_orders, type(form_orders))
         if form_orders.is_valid():
             new_order = UserOrders(user=User.objects.get(pk=request.user.id),
-                                    procedure=Procedures.objects.get(proc_number=self.kwargs['proc_num']),
-                                    my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
-                                    amount=form_orders.cleaned_data['amount'],
-                                    comment=form_orders.cleaned_data['comment'],
-                                    win='win'in request.POST)
+                                   procedure=Procedures.objects
+                                   .get(proc_number=self.kwargs['proc_num']),
+                                   my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
+                                   amount=form_orders.cleaned_data['amount'],
+                                   comment=form_orders.cleaned_data['comment'],
+                                   win='win' in request.POST)
             new_order.save()
             UserContracts(order=new_order).save()
 
@@ -193,26 +200,47 @@ class ProcedureView(ListView):
         form = UserOrdersForm(request.POST)
         if form.is_valid():
             order = UserOrders.objects.get(pk=int(request.POST['update']),
-                                        user=request.user.id)
+                                           user=request.user.id)
             order.amount = form.cleaned_data['amount']
             order.comment = form.cleaned_data['comment']
             order.win = 'win' in request.POST
             order.save()
-    
+
     def update_contract(self, request):
         contract = UserContracts.objects.get(order=UserOrders.objects.get(pk=int(request.POST['update_contract']),
                                                                           user=request.user.id))
         contract.contract_num = request.POST['contract_num']
         form = UserContractsForm(request.POST)
         if form.is_valid():
-            contract.contract_date= form.cleaned_data['contract_date']
+            contract.contract_date = form.cleaned_data['contract_date']
             contract.deadline = form.cleaned_data['deadline']
             contract.day_to_shipping = form.cleaned_data['day_to_shipping']
             contract.comment = form.cleaned_data['comment']
             contract.save()
 
-    def post(self, request, *args, **kwargs):
+    def update_procedure(self, request):
+        form = ProceduresForm(request.POST)
         print(self.kwargs['proc_num'])
+        if form.is_valid():
+            procedure = Procedures.objects.get(proc_number=self.kwargs['proc_num'])
+            procedure.places=self.get_obj(Marketplaces, form.cleaned_data['places']),
+            procedure.proc_number=f'{form.cleaned_data["proc_number"]}<-!->{"".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}',
+            procedure.law=self.get_obj(Laws, form.cleaned_data['law']),
+            procedure.type_proc=self.get_obj(TypesProc, form.cleaned_data['type_proc']),
+            procedure.orgs=self.get_obj(Orgs, form.cleaned_data['orgs']),
+            procedure.subject=form.cleaned_data['subject'],
+            procedure.date_start=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_start'], time())),
+            procedure.date_end=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_end'], time())),
+            procedure.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_proc'], time())),
+            procedure.tradeplace=self.get_obj(Tradeplaces, form.cleaned_data['tradeplace']),
+            procedure.stage=self.get_obj(Stages, form.cleaned_data['stage']),
+            procedure.link=form.cleaned_data['link'],
+            procedure.deal_count=form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0,
+            procedure.region=self.get_obj(Region, form.cleaned_data['region']),
+            procedure.save()
+
+    def post(self, request, **kwargs):
+        # print(self.kwargs['proc_num'])
         print(request.POST)
         if 'add' in request.POST:
             self.new_order(request)
@@ -225,6 +253,8 @@ class ProcedureView(ListView):
             print('DELETE')
         elif 'update_contract' in request.POST:
             self.update_contract(request)
+        elif 'update_procedure' in request.POST:
+            self.update_procedure(request)
         return redirect(request.path_info)
 
 
@@ -234,34 +264,37 @@ class CreateProcedure(ListView, UpdateBase):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'form':ProceduresForm()})
+        context.update({'form': ProceduresForm()})
         return context
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
         return super().get(self, request, *args, **kwargs)
-    
+
     def post(self, request):
         print(request.POST)
         form = ProceduresForm(request.POST)
         if form.is_valid():
-            procedure = Procedures(places = self.get_obj(Marketplaces, form.cleaned_data['places']),
-                                   proc_number = f'{form.cleaned_data["proc_number"]}<-!->{"".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}',
-                                   law = self.get_obj(Laws, form.cleaned_data['law']),
-                                   type_proc = self.get_obj(TypesProc, form.cleaned_data['type_proc']),
-                                   orgs = self.get_obj(Orgs, form.cleaned_data['orgs']),
-                                   subject = form.cleaned_data['subject'],
-                                   date_start= form.cleaned_data['date_start'],
-                                   date_end = form.cleaned_data['date_end'],
-                                   date_proc = form.cleaned_data['date_proc'],
-                                   tradeplace = self.get_obj(Tradeplaces, form.cleaned_data['tradeplace']),
-                                   stage = self.get_obj(Stages, form.cleaned_data['stage']),
-                                   link = form.cleaned_data['link'],
-                                   deal_count=  form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0,
-                                   region= self.get_obj(Region, form.cleaned_data['region']),
-                                   personal = True)
-            print(procedure.id)
+            procedure = Procedures(places=self.get_obj(Marketplaces, form.cleaned_data['places']),
+                                   proc_number=f'{form.cleaned_data["proc_number"]}<-!->{"".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}',
+                                   law=form.cleaned_data['law'],
+                                   type_proc=form.cleaned_data['type_proc'],
+                                   orgs=self.get_org(f"{form.cleaned_data['orgs']}(:{form.cleaned_data['orgs_inn']}"),
+                                   subject=form.cleaned_data['subject'],
+                                   tradeplace=self.get_obj(Tradeplaces, form.cleaned_data['tradeplace']),
+                                   stage=form.cleaned_data['stage'],
+                                   link=form.cleaned_data['link'],
+                                   deal_count=form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0,
+                                   region=form.cleaned_data['region'],
+                                   personal=True)
+            if form.cleaned_data['date_start']:
+                procedure.date_start=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_start'], time()))
+            if form.cleaned_data['date_end']:
+                procedure.date_end=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_end'], time()))
+            if form.cleaned_data['date_proc']:
+                procedure.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_proc'], time()))
+            
             procedure.save()
             procedure = Procedures.objects.filter(id=procedure.id)
             print(procedure)
@@ -271,3 +304,4 @@ class CreateProcedure(ListView, UpdateBase):
                 inter = Interesting(user=User.objects.get(id=request.user.id)).save()
             inter.procedure.add(*procedure)
         return redirect('interesting')
+  
