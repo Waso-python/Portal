@@ -3,8 +3,7 @@ import random
 import string
 from django.shortcuts import redirect
 from django.views.generic import ListView
-from .models import (Interesting, Laws, Marketplaces, Orgs, Procedures,
-                     Region, Stages, Tradeplaces, TypesProc, User, UserOrders,
+from .models import (Interesting, Marketplaces, Procedures, Tradeplaces, User, UserOrders,
                      UserOrgs, UserContracts)
 from .forms import UserContractsForm, UserOrdersForm, UserOrgsForm
 from .modelforms import ProceduresForm
@@ -73,7 +72,8 @@ class RecomendBase(ListView):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
-        self.queryset = cache.get('RECOMEND' + str(request.user.id))
+        recomend = cache.get('RECOMEND' + str(request.user.id))
+        self.queryset = recomend if recomend else Procedures.objects.none()
         self.user_id = request.user.id
         return super().get(self, request, *args, **kwargs)
 
@@ -122,7 +122,7 @@ class InterestingBase(ListView):
         return redirect(request.GET.get('next'))
 
 
-class ProcedureView(ListView):
+class ProcedureView(ListView, UpdateBase):
     template_name = 'indexpage/procedure.html'
     model = Procedures
 
@@ -222,21 +222,22 @@ class ProcedureView(ListView):
         form = ProceduresForm(request.POST)
         print(self.kwargs['proc_num'])
         if form.is_valid():
+            for elem in form.cleaned_data:
+                print(type(form.cleaned_data[elem]), elem)
             procedure = Procedures.objects.get(proc_number=self.kwargs['proc_num'])
-            procedure.places=self.get_obj(Marketplaces, form.cleaned_data['places']),
-            procedure.proc_number=f'{form.cleaned_data["proc_number"]}<-!->{"".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}',
-            procedure.law=self.get_obj(Laws, form.cleaned_data['law']),
-            procedure.type_proc=self.get_obj(TypesProc, form.cleaned_data['type_proc']),
-            procedure.orgs=self.get_obj(Orgs, form.cleaned_data['orgs']),
-            procedure.subject=form.cleaned_data['subject'],
-            procedure.date_start=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_start'], time())),
-            procedure.date_end=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_end'], time())),
-            procedure.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_proc'], time())),
-            procedure.tradeplace=self.get_obj(Tradeplaces, form.cleaned_data['tradeplace']),
-            procedure.stage=self.get_obj(Stages, form.cleaned_data['stage']),
-            procedure.link=form.cleaned_data['link'],
-            procedure.deal_count=form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0,
-            procedure.region=self.get_obj(Region, form.cleaned_data['region']),
+            procedure.places = self.get_obj(Marketplaces ,form.cleaned_data['places'])
+            procedure.law = form.cleaned_data['law']
+            procedure.type_proc= form.cleaned_data['type_proc']
+            procedure.orgs = self.get_org(f"{form.cleaned_data['orgs']}(:{form.cleaned_data['orgs_inn']}")
+            procedure.subject = form.cleaned_data['subject']
+            procedure.date_start = pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_start'], time()))
+            procedure.date_end = pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_end'], time()))
+            procedure.date_proc = pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_proc'], time()))
+            procedure.tradeplace = self.get_obj(Tradeplaces, form.cleaned_data['tradeplace'])
+            procedure.stage = form.cleaned_data['stage']
+            procedure.link = form.cleaned_data['link']
+            procedure.deal_count = form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0
+            procedure.region = form.cleaned_data['region']
             procedure.save()
 
     def post(self, request, **kwargs):
@@ -276,8 +277,9 @@ class CreateProcedure(ListView, UpdateBase):
         print(request.POST)
         form = ProceduresForm(request.POST)
         if form.is_valid():
+            key = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))
             procedure = Procedures(places=self.get_obj(Marketplaces, form.cleaned_data['places']),
-                                   proc_number=f'{form.cleaned_data["proc_number"]}<-!->{"".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}',
+                                   proc_number=f'{form.cleaned_data["proc_number"]}<-!->{key}',
                                    law=form.cleaned_data['law'],
                                    type_proc=form.cleaned_data['type_proc'],
                                    orgs=self.get_org(f"{form.cleaned_data['orgs']}(:{form.cleaned_data['orgs_inn']}"),
@@ -301,7 +303,7 @@ class CreateProcedure(ListView, UpdateBase):
             try:
                 inter = Interesting.objects.get(user=request.user.id)
             except Interesting.DoesNotExist:
-                inter = Interesting(user=User.objects.get(id=request.user.id)).save()
+                inter = Interesting.objects.create(user=User.objects.get(id=request.user.id))
             inter.procedure.add(*procedure)
         return redirect('interesting')
   

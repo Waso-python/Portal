@@ -289,20 +289,21 @@ class Procedures(models.Model):
         return f'{self.id} - {self.proc_number} - {self.subject}'
 
     def get_form_dict(self):
-        return {'places':self.places.full_name,
-                'proc_number':self.personal_proc_num(), 
-                'law':self.law.full_name,
-                'type_proc':self.type_proc.full_name, 
-                'orgs':self.orgs.full_name, 
-                'subject':self.subject, 
-                'date_start':self.date_start,
-                'date_end':self.date_end,
-                'date_proc':self.date_proc,
-                'tradeplace':self.tradeplace.full_name, 
-                'stage':self.stage.full_name,
-                'link':self.link,
-                'deal_count':self.deal_count,
-                'region':self.region.full_name}
+        return {'places': self.places.full_name,
+                'proc_number': self.personal_proc_num(), 
+                'law': self.law,
+                'type_proc': self.type_proc, 
+                'orgs': self.orgs.full_name,
+                'orgs_inn': self.orgs.inn,
+                'subject': self.subject, 
+                'date_start': self.date_start,
+                'date_end': self.date_end,
+                'date_proc': self.date_proc,
+                'tradeplace': self.tradeplace.full_name, 
+                'stage': self.stage,
+                'link': self.link,
+                'deal_count': self.deal_count,
+                'region': self.region}
 
     def personal_proc_num(self):
         return self.proc_number.split('<-!->')[0]

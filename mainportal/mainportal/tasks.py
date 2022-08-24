@@ -38,8 +38,8 @@ class UpdateBase():
             entity = Procedures.objects.filter(proc_number=data.num_proc)[0]
         except IndexError:
             entity = Procedures()
-        if (data_hash == entity.hash):
-            return
+        # if (data_hash == entity.hash):
+        #     return
         entity.places = self.get_obj(Marketplaces, 'portal_providers')
         entity.proc_number = data.num_proc
         entity.law = self.get_obj(Laws, data.law_proc)

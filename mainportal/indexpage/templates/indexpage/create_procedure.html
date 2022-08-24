@@ -10,12 +10,24 @@
 {% block body_right %}
 <h1>Добавление процедуры</h1>
 <form method="post">
-{% csrf_token %}
-<table>
-{% for elem in form %}
-<tr><td>{{ elem.label }}</td><td> {{ elem }}</td></tr>
-{% endfor %}
-</table>
-<button type="submit" class="btn btn-primary">Добавить</button>
+    {% csrf_token %}
+    <table>
+        <tr><td>{{ form.law.label }}</td><td>{{ form.law }}</td></tr>
+        <tr><td>{{ form.type_proc.label }}</td><td>{{ form.type_proc }}</td></tr>
+        <tr><td>{{ form.stage.label }}</td><td>{{ form.stage }}</td></tr>
+        <tr><td>{{ form.region.label }}</td><td>{{ form.region }}</td></tr>
+        <tr><td>{{ form.places.label }}</td><td>{{ form.places }}</td></tr>
+        <tr><td>{{ form.proc_number.label }}</td><td>{{ form.proc_number }}</td></tr>
+        <tr><td>{{ form.orgs.label }}</td><td>{{ form.orgs }}</td></tr>
+        <tr><td>{{ form.orgs_inn.label }}</td><td>{{ form.orgs_inn }}</td></tr>
+        <tr><td>{{ form.subject.label }}</td><td>{{ form.subject }}</td></tr>
+        <tr><td>{{ form.date_start.label }}</td><td>{{ form.date_start }}</td></tr>
+        <tr><td>{{ form.date_end.label }}</td><td>{{ form.date_end }}</td></tr>
+        <tr><td>{{ form.date_proc.label }}</td><td>{{ form.date_proc }}</td></tr>
+        <tr><td>{{ form.tradeplace.label }}</td><td>{{ form.tradeplace }}</td></tr>
+        <tr><td>{{ form.link.label }}</td><td>{{ form.link }}</td></tr>
+        <tr><td>{{ form.deal_count.label }}</td><td>{{ form.deal_count }}</td></tr>
+    </table>
+    <button type="submit" class="btn btn-primary">Добавить</button>
 </form>
 {% endblock %}
