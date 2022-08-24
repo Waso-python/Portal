@@ -1,7 +1,6 @@
-from ast import Delete
 from django.shortcuts import redirect
 from django.views.generic import ListView
-from .forms import forms, KeysForm, UserOrgsForm
+from .forms import KeysForm, UserOrgsForm
 from .models import ProfileUserModel
 from indexpage.models import UserOrgs, User
 from mainportal.tasks import cache_recomend

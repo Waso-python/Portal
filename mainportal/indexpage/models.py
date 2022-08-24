@@ -1,7 +1,3 @@
-from pyexpat import model
-from random import choices
-from statistics import mode
-from xml.etree.ElementTree import Comment
 from django.db import models
 from django.contrib.auth.models import User
 from indexpage.forms import UserOrdersForm, UserContractsForm
