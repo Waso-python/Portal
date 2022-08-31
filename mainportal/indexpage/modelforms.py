@@ -1,6 +1,13 @@
 from django import forms
 from .models import Procedures
 
+FRUIT_CHOICES= [
+    ('orange', 'Oranges'),
+    ('cantaloupe', 'Cantaloupes'),
+    ('mango', 'Mangoes'),
+    ('honeydew', 'Honeydews'),
+    ]
+
 class ProceduresForm(forms.ModelForm):
     places = forms.CharField(label='Место проведения', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     proc_number = forms.CharField(label='Номер процедуры', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
@@ -8,15 +15,19 @@ class ProceduresForm(forms.ModelForm):
     orgs_inn = forms.CharField(label='ИНН', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     subject = forms.CharField(label='Задача', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     date_start = forms.DateTimeField(label='Дата старта', widget=forms.SelectDateWidget(years=range(2020, 2031)), required=False)
-    # time_start = forms.TimeField(label='Время старта')
+    hours_start = forms.CharField(label='часы', widget=forms.Select(choices=((i,i) for i in range(24))))
+    minutes_start = forms.CharField(label='минуты', widget=forms.Select(choices=((i,i) for i in range(0, 51, 10))))
     date_end = forms.DateTimeField(label='Дата рассмотрения', widget=forms.SelectDateWidget(years=range(2020, 2031)), required=False)
-    # time_end = forms.TimeField(label='Время рассмотрения')
+    hours_end = forms.CharField(label='часы', widget=forms.Select(choices=((i,i) for i in range(24))))
+    minutes_end = forms.CharField(label='минуты', widget=forms.Select(choices=((i,i) for i in range(0, 51, 10))))
     date_proc = forms.DateTimeField(label='Прием заявок до', widget=forms.SelectDateWidget(years=range(2020, 2031)), required=False)
-    # time_proc = forms.TimeField(label='Прием заявок до')
+    hours_proc = forms.CharField(label='часы', widget=forms.Select(choices=((i,i) for i in range(24))))
+    minutes_proc = forms.CharField(label='минуты', widget=forms.Select(choices=((i,i) for i in range(0, 51, 10))))
     tradeplace = forms.CharField(label='Торговая площадка', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     link = forms.CharField(label='Ссылка', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     deal_count = forms.CharField(label='Кол-во заявок', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     summ_proc = forms.CharField(label='Сумма', max_length=20, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
+
 
     class Meta:
         model = Procedures

@@ -21,11 +21,18 @@
         <tr><td>{{ form.orgs.label }}</td><td>{{ form.orgs }}</td></tr>
         <tr><td>{{ form.orgs_inn.label }}</td><td>{{ form.orgs_inn }}</td></tr>
         <tr><td>{{ form.subject.label }}</td><td>{{ form.subject }}</td></tr>
-        <tr><td>{{ form.date_start.label }}</td><td>{{ form.date_start }}</td></tr>
-        <tr><td>{{ form.date_end.label }}</td><td>{{ form.date_end }}</td></tr>
-        <tr><td>{{ form.date_proc.label }}</td><td>{{ form.date_proc }}</td></tr>
+        <tr><td>{{ form.date_start.label }}</td><td>{{ form.date_start }}
+        {{ form.hours_start.label }} {{ form.hours_start }}
+        {{ form.minutes_start.label }} {{ form.minutes_start }}</td></tr>
+        <tr><td>{{ form.date_end.label }}</td><td>{{ form.date_end }}
+        {{ form.hours_end.label }}{{ form.hours_end }}
+        {{ form.minutes_end.label }}{{ form.minutes_end }}</td></tr>
+        <tr><td>{{ form.date_proc.label }}</td><td>{{ form.date_proc }}
+        {{ form.hours_proc.label }}{{ form.hours_proc }}
+        {{ form.minutes_proc.label }}{{ form.minutes_proc }}</td></tr>
         <tr><td>{{ form.tradeplace.label }}</td><td>{{ form.tradeplace }}</td></tr>
         <tr><td>{{ form.link.label }}</td><td>{{ form.link }}</td></tr>
+        <tr><td>{{ form.summ_proc.label }}</td><td>{{ form.summ_proc }}</td></tr>
         <tr><td>{{ form.deal_count.label }}</td><td>{{ form.deal_count }}</td></tr>
     </table>
     <button type="submit" class="btn btn-primary">Добавить</button>

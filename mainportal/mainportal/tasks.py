@@ -21,30 +21,33 @@ class UpdateBase():
             obj = model.objects.create(full_name=value)
         return obj
 
-    def get_org(self, partner):
+    def get_org(self, partner, update_name = False):
         org_inn = ''.join([i if i.isdigit() else '' for i in partner.split(':')[1]])
+        org_name = partner.split('(')[0]
         try:
-            obj = Orgs.objects.get(inn=org_inn)
+            obj: Orgs = Orgs.objects.get(inn=org_inn)
+            if update_name and obj.full_name != org_name:
+                obj.full_name=org_name
+                obj.save()
         except Orgs.DoesNotExist:
-            org_name = partner.split('(')[0]
             obj = Orgs.objects.create(full_name=org_name, inn=org_inn)
         return obj
 
     def create_update_entity(self, i):
         data_lst = RawData.objects.filter(num_proc=i[0]).order_by('-pk')
-        data = data_lst[0]
+        data: RawData = data_lst[0]
         data_hash = data.check_hash()
         try:
-            entity = Procedures.objects.filter(proc_number=data.num_proc)[0]
+            entity: Procedures = Procedures.objects.filter(proc_number=data.num_proc)[0]
         except IndexError:
             entity = Procedures()
-        # if (data_hash == entity.hash):
-        #     return
+        if (data_hash == entity.hash):
+            return
         entity.places = self.get_obj(Marketplaces, 'portal_providers')
         entity.proc_number = data.num_proc
         entity.law = self.get_obj(Laws, data.law_proc)
         entity.type_proc = self.get_obj(TypesProc, data.type_proc)
-        entity.orgs = self.get_org(data.partner)
+        entity.orgs = self.get_org(data.partner, True)
         entity.summ_proc = data.summ_proc
         entity.subject = data.subj_proc
         entity.date_start = pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
@@ -64,7 +67,6 @@ class UpdateBase():
         rawdata = RawData.objects.filter(complete=0).values_list('num_proc')
         print(len(set(rawdata)))
         set(map(self.create_update_entity, set(rawdata)))
-
         cache_base.delay()
         cache_old_base.delay()
         rawdata.update(complete=1)
@@ -74,7 +76,7 @@ class UpdateBase():
 
 @app.task()
 def cache_base():
-    cache.set('BASE', list(Procedures.objects.filter(date_proc__gte=datetime.today(), personal=False).order_by('-date_proc').values('places__full_name', 'proc_number', 'law__full_name', 
+    cache.set('BASE', list(Procedures.objects.filter(date_proc__gte=datetime.today(), personal=False).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
                     'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name', 'summ_proc')), None)
     users_id = ProfileUserModel.objects.all().values('user')
@@ -84,7 +86,7 @@ def cache_base():
 
 @app.task()
 def cache_old_base():
-    cache.set('OLD_BASE', list(Procedures.objects.filter(personal=False).exclude(date_proc__gte=datetime.today()).order_by('-date_proc').values('places__full_name', 'proc_number', 
+    cache.set('OLD_BASE', list(Procedures.objects.filter(personal=False).exclude(date_proc__gte=datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 
                     'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name', 'summ_proc')), None)
 

@@ -15,20 +15,20 @@
             {% if procedure %}
             <table class="table table-striped table-sm">
                 <tr><th>{{ procedure.proc_number|safe }}</th></tr>
-                <tr><td>{{ procedure.law__full_name|safe }}</td></tr>
-                <tr><td>{{ procedure.type_proc__full_name|safe }}</tr></td>
-                <tr><td>{{ procedure.orgs__full_name|safe }}</tr></td>
-                <tr><td>{{ procedure.orgs__inn|safe }}</tr></td>
-                <tr><td>{{ procedure.subject|safe }}</tr></td>
-                <tr><td>{{ procedure.date_start }}</tr></td>
-                <tr><td>{{ procedure.date_end }}</tr></td>
-                <tr><td>{{ procedure.date_proc }}</tr></td>
-                <tr><td><a href="{{ procedure.link|safe }}" target="_blank" >{{ procedure.tradeplace__full_name|safe }}</a></tr></td>
-                <tr><td>{{ procedure.stage__full_name|safe }}</tr></td>
-                <tr><td>{{ procedure.created_at|safe }}</tr></td>
-                <tr><td>{{ procedure.sum_proc|safe }}</tr></td>
-                <tr><td>{{ procedure.deal_count|safe }}</tr></td>
-                <tr><td>{{ procedure.region__full_name|safe }}</tr></td>
+                <tr><td>Закон</td><td>{{ procedure.law__full_name|safe }}</td></tr>
+                <tr><td>Тип</td><td>{{ procedure.type_proc__full_name|safe }}</tr></td>
+                <tr><td>Организация</td><td>{{ procedure.orgs__full_name|safe }}</tr></td>
+                <tr><td>ИНН</td><td>{{ procedure.orgs__inn|safe }}</tr></td>
+                <tr><td>Задача</td><td>{{ procedure.subject|safe }}</tr></td>
+                <tr><td>Старт</td><td>{{ procedure.date_start }}</tr></td>
+                <tr><td>Дата рассмотрения</td><td>{{ procedure.date_end }}</tr></td>
+                <tr><td>До</td><td>{{ procedure.date_proc }}</tr></td>
+                <tr><td>Место</td><td><a href="{{ procedure.link|safe }}" target="_blank" >{{ procedure.tradeplace__full_name|safe }}</a></tr></td>
+                <tr><td>Этап</td><td>{{ procedure.stage__full_name|safe }}</tr></td>
+                <tr><td>Создано</td><td>{{ procedure.created_at|safe }}</tr></td>
+                <tr><td>Сумма</td><td>{{ procedure.summ_proc|safe }}</tr></td>
+                <tr><td>Заявки</td><td>{{ procedure.deal_count|safe }}</tr></td>
+                <tr><td>Регион</td><td>{{ procedure.region__full_name|safe }}</tr></td>
             </table>
             {% elif form_procedure %}
             <form method="post">
@@ -42,12 +42,18 @@
                 <tr><td>{{ form_procedure.orgs.label }}</td><td>{{ form_procedure.orgs }}</td></tr>
                 <tr><td>{{ form_procedure.orgs_inn.label }}</td><td>{{ form_procedure.orgs_inn }}</td></tr>
                 <tr><td>{{ form_procedure.subject.label }}</td><td>{{ form_procedure.subject }}</td></tr>
-                <tr><td>{{ form_procedure.date_start.label }}</td><td>{{ form_procedure.date_start }}</td></tr>
-                <tr><td>{{ form_procedure.date_end.label }}</td><td>{{ form_procedure.date_end }}</td></tr>
-                <tr><td>{{ form_procedure.date_proc.label }}</td><td>{{ form_procedure.date_proc }}</td></tr>
+                <tr><td>{{ form_procedure.date_start.label }}</td><td>{{ form_procedure.date_start }}
+                    {{ form_procedure.hours_start.label }} {{ form_procedure.hours_start }}
+                    {{ form_procedure.minutes_start.label }} {{ form_procedure.minutes_start }}</td></tr>
+                    <tr><td>{{ form_procedure.date_end.label }}</td><td>{{ form_procedure.date_end }}
+                    {{ form_procedure.hours_end.label }}{{ form_procedure.hours_end }}
+                    {{ form_procedure.minutes_end.label }}{{ form_procedure.minutes_end }}</td></tr>
+                    <tr><td>{{ form_procedure.date_proc.label }}</td><td>{{ form_procedure.date_proc }}
+                    {{ form_procedure.hours_proc.label }}{{ form_procedure.hours_proc }}
+                    {{ form_procedure.minutes_proc.label }}{{ form_procedure.minutes_proc }}</td></tr>
                 <tr><td>{{ form_procedure.tradeplace.label }}</td><td>{{ form_procedure.tradeplace }}</td></tr>
                 <tr><td>{{ form_procedure.link.label }}</td><td>{{ form_procedure.link }}</td></tr>
-                <tr><td>{{ form_procedure.sum_proc.label }}</td><td>{{ form_procedure.sum_proc }}</td></tr>
+                <tr><td>{{ form_procedure.summ_proc.label }}</td><td>{{ form_procedure.summ_proc }}</td></tr>
                 <tr><td>{{ form_procedure.deal_count.label }}</td><td>{{ form_procedure.deal_count }}</td></tr>
                 </table>
                 <button type="submit" class="btn btn-primary" name="update_procedure">Обновить</button>
