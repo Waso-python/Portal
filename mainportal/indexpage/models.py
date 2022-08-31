@@ -278,6 +278,7 @@ class Procedures(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     deal_count = models.IntegerField()
     region = models.ForeignKey('Region', models.DO_NOTHING, blank=True, null=True)
+    summ_proc = models.CharField(max_length=20, blank=True, null=True)
     hash = models.CharField(max_length=200, null=True)
     personal = models.BooleanField(default=False, blank=True, null=True)
 
@@ -295,6 +296,7 @@ class Procedures(models.Model):
                 'date_start': self.date_start,
                 'date_end': self.date_end,
                 'date_proc': self.date_proc,
+                'summ_proc':self.summ_proc,
                 'tradeplace': self.tradeplace.full_name, 
                 'stage': self.stage,
                 'link': self.link,

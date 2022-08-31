@@ -35,5 +35,6 @@ class ProceduresForm(forms.Form):
     tradeplace = forms.CharField(label='Торговая площадка', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     stage = forms.CharField(label='Этап', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     link = forms.CharField(label='Ссылка', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
+    summ_proc = forms.CharField(label='Сумма', max_length=20, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     deal_count = forms.CharField(label='Кол-во заявок', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)
     region = forms.CharField(label='Регион', max_length=250, widget=forms.Textarea(attrs={'cols': 50, 'rows': 1}), required=False)

@@ -26,6 +26,7 @@
                 <tr><td><a href="{{ procedure.link|safe }}" target="_blank" >{{ procedure.tradeplace__full_name|safe }}</a></tr></td>
                 <tr><td>{{ procedure.stage__full_name|safe }}</tr></td>
                 <tr><td>{{ procedure.created_at|safe }}</tr></td>
+                <tr><td>{{ procedure.sum_proc|safe }}</tr></td>
                 <tr><td>{{ procedure.deal_count|safe }}</tr></td>
                 <tr><td>{{ procedure.region__full_name|safe }}</tr></td>
             </table>
@@ -46,6 +47,7 @@
                 <tr><td>{{ form_procedure.date_proc.label }}</td><td>{{ form_procedure.date_proc }}</td></tr>
                 <tr><td>{{ form_procedure.tradeplace.label }}</td><td>{{ form_procedure.tradeplace }}</td></tr>
                 <tr><td>{{ form_procedure.link.label }}</td><td>{{ form_procedure.link }}</td></tr>
+                <tr><td>{{ form_procedure.sum_proc.label }}</td><td>{{ form_procedure.sum_proc }}</td></tr>
                 <tr><td>{{ form_procedure.deal_count.label }}</td><td>{{ form_procedure.deal_count }}</td></tr>
                 </table>
                 <button type="submit" class="btn btn-primary" name="update_procedure">Обновить</button>

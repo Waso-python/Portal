@@ -96,9 +96,9 @@ class InterestingBase(ListView):
         if not request.user.is_authenticated:
             return redirect('login')
         try:
-            self.queryset = Interesting.objects.get(user=request.user.id).procedure.all().values('id', 'places__full_name', 'proc_number', 'law__full_name',
+            self.queryset = Interesting.objects.get(user=request.user.id).procedure.all().values('places__full_name', 'proc_number', 'law__full_name',
                     'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name',
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')
+                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name', 'summ_proc')
         except Interesting.DoesNotExist as e:
             print('ERROR' + str(e))
             self.queryset = Interesting.objects.none()
@@ -287,6 +287,7 @@ class CreateProcedure(ListView, UpdateBase):
                                    tradeplace=self.get_obj(Tradeplaces, form.cleaned_data['tradeplace']),
                                    stage=form.cleaned_data['stage'],
                                    link=form.cleaned_data['link'],
+                                   summ_proc = form.cleaned_data['summ_proc'],
                                    deal_count=form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0,
                                    region=form.cleaned_data['region'],
                                    personal=True)

@@ -26,6 +26,7 @@
 				<th scope="col">Торговая площадка</th>
 				<th scope="col">Этап</th>
 				<th scope="col">Дата создания</th>
+				<th scope="col">Сумма</th>
 				<th scope="col">Кол-во заявок</th>
 				<th scope="col">Регион</th>
 				{% if inter_list %}
@@ -49,6 +50,7 @@
 				<td>{{ elem.tradeplace__full_name|safe }}</td>
 				<td>{{ elem.stage__full_name|safe }}</td>
 				<td>{{ elem.created_at|safe }}</td>
+				<td>{{ elem.sum_proc|safe }}</td>
 				<td>{{ elem.deal_count|safe }}</td>
 				<td>{{ elem.region__full_name|safe }}</td>
 				{% if elem.proc_number in inter_list %}

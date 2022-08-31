@@ -45,12 +45,13 @@ class UpdateBase():
         entity.law = self.get_obj(Laws, data.law_proc)
         entity.type_proc = self.get_obj(TypesProc, data.type_proc)
         entity.orgs = self.get_org(data.partner)
+        entity.summ_proc = data.summ_proc
         entity.subject = data.subj_proc
         entity.date_start = pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
         entity.date_end = pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
         entity.date_proc = pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
         entity.tradeplace = self.get_obj(Tradeplaces, 'portal_providers')
-        entity.stage = self.get_obj(Stages, data.status) 
+        entity.stage = self.get_obj(Stages, data.status)
         entity.link = data.link_proc
         entity.deal_count = int(data.count_order) if data.count_order else 0
         entity.region = self.get_obj(Region, data.region)
@@ -63,19 +64,19 @@ class UpdateBase():
         rawdata = RawData.objects.filter(complete=0).values_list('num_proc')
         print(len(set(rawdata)))
         set(map(self.create_update_entity, set(rawdata)))
-        if len(rawdata) > 0:
-            cache_base.delay()
-            cache_old_base.delay()
-            rawdata.update(complete=1)
+
+        cache_base.delay()
+        cache_old_base.delay()
+        rawdata.update(complete=1)
         print("--- %s seconds ---" % (time.time() - start_time))
         return len(rawdata)
 
 
 @app.task()
 def cache_base():
-    cache.set('BASE', list(Procedures.objects.filter(date_proc__gte=datetime.today(), personal=False).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
+    cache.set('BASE', list(Procedures.objects.filter(date_proc__gte=datetime.today(), personal=False).order_by('-date_proc').values('places__full_name', 'proc_number', 'law__full_name', 
                     'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')), None)
+                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name', 'summ_proc')), None)
     users_id = ProfileUserModel.objects.all().values('user')
     for user_id in users_id:
         cache_recomend.delay(user_id['user'])
@@ -83,9 +84,9 @@ def cache_base():
 
 @app.task()
 def cache_old_base():
-    cache.set('OLD_BASE', list(Procedures.objects.filter(personal=False).exclude(date_proc__gte=datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 
+    cache.set('OLD_BASE', list(Procedures.objects.filter(personal=False).exclude(date_proc__gte=datetime.today()).order_by('-date_proc').values('places__full_name', 'proc_number', 
                     'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')), None)
+                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name', 'summ_proc')), None)
 
 
 def find_element(elem: str, keys: str):
