@@ -109,7 +109,7 @@ class InterestingBase(ListView):
     def add_Interesting(request):
         if not request.user.is_authenticated:
             return redirect('login')
-        print(request.GET)
+        # print(request.GET)
         if not int(request.GET.get('value')):
             Interesting.objects.get(user=request.user.id).procedure.remove(Procedures.objects.get(pk=request.GET.get('pk')))
         else:
@@ -135,7 +135,7 @@ class ProcedureView(ListView, UpdateBase):
                     'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')[0]
             context.update({'procedure': procedure})
         except IndexError as e:
-            print('IndexError', e)
+            print('IndexError general_context', e)
         new_orders_form = UserOrdersForm()
         my_org_form = UserOrgsForm()
         my_org_form.fields['my_org'].queryset = self.user_orgs
@@ -152,7 +152,7 @@ class ProcedureView(ListView, UpdateBase):
             form = ProceduresForm(procedure.get_form_dict())
             context.update({'form_procedure': form})
         except IndexError as e:
-            print('IndexError', e)
+            print('IndexError personal_context', e)
         new_orders_form = UserOrdersForm()
         my_org_form = UserOrgsForm()
         my_org_form.fields['my_org'].queryset = self.user_orgs
@@ -181,7 +181,6 @@ class ProcedureView(ListView, UpdateBase):
 
     def new_order(self, request):
         form_orders = UserOrdersForm(request.POST)
-        print(form_orders, type(form_orders))
         if form_orders.is_valid():
             new_order = UserOrders(user=User.objects.get(pk=request.user.id),
                                    procedure=Procedures.objects
@@ -222,8 +221,6 @@ class ProcedureView(ListView, UpdateBase):
         form = ProceduresForm(request.POST)
         print(self.kwargs['proc_num'])
         if form.is_valid():
-            for elem in form.cleaned_data:
-                print(type(form.cleaned_data[elem]), elem)
             procedure = Procedures.objects.get(proc_number=self.kwargs['proc_num'])
             procedure.places = self.get_obj(Marketplaces ,form.cleaned_data['places'])
             procedure.law = form.cleaned_data['law']
@@ -248,10 +245,13 @@ class ProcedureView(ListView, UpdateBase):
                 procedure.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_proc'],
                                         datetime.strptime(f"{form.cleaned_data['hours_proc']}:{form.cleaned_data['minutes_proc']}",
                                         '%H:%M').time()))
+        print(f'{procedure.date_start}\n{procedure.date_end}\n{procedure.date_proc}')
+        procedure.save()
+
 
     def post(self, request, **kwargs):
         # print(self.kwargs['proc_num'])
-        print(request.POST)
+        # print(request.POST)
         if 'add' in request.POST:
             self.new_order(request)
             print('ADD')
@@ -283,7 +283,7 @@ class CreateProcedure(ListView, UpdateBase):
         return super().get(self, request, *args, **kwargs)
 
     def post(self, request):
-        print(request.POST)
+        # print(request.POST)
         form = ProceduresForm(request.POST)
         if form.is_valid():
             key = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))
@@ -312,9 +312,9 @@ class CreateProcedure(ListView, UpdateBase):
                 procedure.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_proc'],
                                         datetime.strptime(f"{form.cleaned_data['hours_proc']}:{form.cleaned_data['minutes_proc']}",
                                         '%H:%M').time()))
+            print(f'{procedure.date_start}\n{procedure.date_end}\n{procedure.date_proc}')
             procedure.save()
             procedure = Procedures.objects.filter(id=procedure.id)
-            print(procedure)
             try:
                 inter = Interesting.objects.get(user=request.user.id)
             except Interesting.DoesNotExist:

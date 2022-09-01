@@ -46,7 +46,6 @@ class ProfileView(ListView):
                 UserOrgs(name=form.cleaned_data['new'], user=User.objects.get(pk=request.user.id)).save()
         elif request.POST['form_orgs'] == 'delete' and request.POST['old']:
             delete_org = UserOrgs.objects.get(pk=int(request.POST['old']), user__pk=request.user.id)
-            print(delete_org)
             delete_org.delete()
 
     def post(self, request):
@@ -54,5 +53,4 @@ class ProfileView(ListView):
             self.change_keys(request)
         elif 'form_orgs' in request.POST:
             self.change_orgs(request)
-        print(request.POST)
         return redirect('profile')

@@ -294,20 +294,20 @@ class Procedures(models.Model):
                 'orgs_inn': self.orgs.inn,
                 'subject': self.subject, 
                 'date_start': self.date_start,
-                'hours_start': self.date_start.hour,
-                'minutes_start': self.date_start.minute,
+                'hours_start': self.date_start.hour if self.date_start != None else 0,
+                'minutes_start': self.date_start.minute if self.date_start != None else 0,
                 'date_end': self.date_end,
-                'hours_end': self.date_end.hour,
-                'minutes_end': self.date_end.minute,
+                'hours_end': self.date_end.hour if self.date_end != None else 0,
+                'minutes_end': self.date_end.minute if self.date_end != None else 0,
                 'date_proc': self.date_proc,
-                'hours_proc': self.date_proc.hour,
-                'minutes_proc': self.date_proc.minute,
+                'hours_proc': self.date_proc.hour if self.date_proc != None else 0,
+                'minutes_proc': self.date_proc.minute if self.date_proc != None else 0,
                 'summ_proc':self.summ_proc,
                 'tradeplace': self.tradeplace.full_name, 
                 'stage': self.stage,
                 'link': self.link,
                 'deal_count': self.deal_count,
-                'region': self.region,}
+                'region': self.region}
 
     def personal_proc_num(self):
         return self.proc_number.split('<-!->')[0]
