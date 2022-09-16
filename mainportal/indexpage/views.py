@@ -19,7 +19,7 @@ class FullBase(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_name'] = 'Base'
+        context['page_name'] = 'Все процедуры'
         inter_list = Interesting.objects.filter(user=self.user_id)
         try:
             context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
@@ -43,7 +43,7 @@ class OldBase(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_name'] = 'Old base'
+        context['page_name'] = 'Завершенные'
         return context
 
     def get(self, request, *args, **kwargs):
@@ -59,7 +59,7 @@ class RecomendBase(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_name'] = 'Recomend'
+        context['page_name'] = 'Рекомендованные'
         inter_list = Interesting.objects.filter(user=self.user_id)
         try:
             context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)

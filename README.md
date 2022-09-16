@@ -25,3 +25,9 @@ python3 manage.py migrate
 
 python manage.py createsuperuser
 superuser - , pass - 
+
+в отдельном (в папке где лежит manage.py)
+celery -A mainportal worker --loglevel=info
+
+после в отдельном окне 
+celery -A mainportal beat --loglevel=info

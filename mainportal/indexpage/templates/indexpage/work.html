@@ -1,64 +1,98 @@
 {% extends 'layout/layout.html' %}
-
-{% block head %}
-<title>Base</title>
-{% endblock %}
+{% load static %}
+{% block title %}
+		<title>{{ page_name }}</title>
+		{% endblock %}
 <!-- -------------------------------------------------------------------- -->
-{% block body_left %}
-{% endblock %}
-{% block body_right %}
-<h2>{{ page_name }}</h2>
+
+{% block content %}
+
 <a class="btn btn-primary" href="{% url 'create_proc' %}" >Добавить процедуру</a>
 	{% if object_list %}
 	<table class="table table-striped table-sm">
 		<thead class="thead-dark">
 			<tr>
-				<th scope="col">Сайт</th>
 				<th scope="col">№</th>
-				<th scope="col">Закон</th>
-				<th scope="col">Тип</th>
 				<th scope="col">Огранизация</th>
-				<th scope="col">ИНН</th>
-				<th scope="col">Задача</th>
-				<th scope="col">Дата старта</th>
+				
 				<th scope="col">Дата рассмотрения</th>
-				<th scope="col">Прием заявок до</th>
+				
 				<th scope="col">Торговая площадка</th>
-				<th scope="col">Этап</th>
+				
 				<th scope="col">Дата создания</th>
-				<th scope="col">Кол-во заявок</th>
 				<th scope="col">Сумма</th>
-				<th scope="col">Регион</th>
+				<th scope="col">Кол-во заявок</th>
+				
 				{% if inter_list %}
-				<th scope="col">В интересных</th>
+				<th scope="col">В работе</th>
 				{% endif %}
 			</tr>
 		</thead>
 		<tbody>
 		{% for elem in object_list %}
 			<tr>
-				<td><a href="{{ elem.link|safe }}" target="_blank">{{ elem.places__full_name|safe }}</a></td>
-				<td><a href="{% url 'procedure' elem.proc_number|safe %}">{{ elem.proc_number|safe }}</a></td>
-				<td>{{ elem.law__full_name|safe }}</td>
-				<td>{{ elem.type_proc__full_name|safe }}</td>
-				<td>{{ elem.orgs__full_name|safe }}</td>
-				<td>{{ elem.orgs__inn|safe }}</td>
-				<td>{{ elem.subject|safe }}</td>
-				<td>{{ elem.date_start }}</td>
-				<td>{{ elem.date_end }}</td>
-				<td>{{ elem.date_proc }}</td>
-				<td>{{ elem.tradeplace__full_name|safe }}</td>
-				<td>{{ elem.stage__full_name|safe }}</td>
+				<td><a href="{{ elem.link|safe }}" target="_blank">
+					{% if elem.places__full_name == "portal_providers" %}
+					<img src="{% static 'indexpage/png/pp_logo.png' %}" alt="Портал поставщиков" style="width:50px"> 
+					{% else %}
+					{{ elem.places__full_name|safe }}
+					{% endif %}
+				</a><br>
+				<a href="{% url 'procedure' elem.proc_number|safe %}">{{ elem.proc_number|safe }}</a>
+				<br>
+				
+				{{ elem.law__full_name|safe }}<br>
+				{{ elem.type_proc__full_name|safe }}<br>
+				{{ elem.stage__full_name|safe }}
+				</td>
+				<td><small>
+					<span >
+						{{ elem.orgs__inn|safe }}
+					  </span><br>
+					<span class="d-inline-block text-truncate" style="max-width: 350px;">
+						{{ elem.orgs__full_name|safe }}
+					</span><br>
+					<span >
+						{{ elem.subject|safe }}
+					</span><br>
+					{{ elem.region__full_name|safe }}
+				
+				</small></td>
+				<td><small>
+					
+					<span class="d-inline-block text-truncate" style="max-width: 250px;">
+						с {{ elem.date_start }}
+					</span><br>
+					<span class="d-inline-block text-truncate" style="max-width: 250px;">
+						по {{ elem.date_end }}
+					</span><br>
+
+				</small>
+				</td>
+				<td>
+					{% if elem.tradeplace__full_name == "portal_providers" %}
+					<img src="{% static 'indexpage/png/pp_logo.png' %}" alt="Портал поставщиков" style="width:50px"> 
+					{% else %}
+					{{ elem.tradeplace__full_name|safe }}
+					{% endif %}
+					<br>
+					{{ elem.date_proc }}
+				
+				</td>
+				
+				
 				<td>{{ elem.created_at|safe }}</td>
-				<td>{{ elem.deal_count|safe }}</td>
 				<td>{{ elem.summ_proc|safe }}</td>
-				<td>{{ elem.region__full_name|safe }}</td>
+				<td>{{ elem.deal_count|safe }}</td>
+				
 				{% if elem.proc_number in inter_list %}
 				<td><a class="btn btn-danger" href="{% url 'add_int'%}?pk={{elem.id}}&value=0&next={{request.get_full_path}}">Удалить</a></td>
 				{% elif inter_list %}
 				<td><a class="btn btn-primary" href="{% url 'add_int'%}?pk={{elem.id}}&value=1&next={{request.get_full_path}}">Добавить</a></td>
 				{% endif %}
-			</tr>
+			
+			
+		</tr>
 		{% endfor %}
 		</tbody>
 	</table>
