@@ -122,3 +122,5 @@ def cache_recomend(user_id):
 @app.task()
 def upd_base():
     UpdateBase().do()
+
+
