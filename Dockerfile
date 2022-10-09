@@ -12,4 +12,4 @@ RUN apt-get update && \
         pip install -r requirements.txt &&\
         chmod +x autorun.sh
 
-CMD ["autorun.sh"]
+CMD ["/home/Portal/autorun.sh"]
