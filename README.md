@@ -1,6 +1,8 @@
 # Portal
 # Django based system for monitoring trade operation on federal portals
 
+stack: Djando, Celery, Postgres
+
 python3 -m venv venv
 
 source venv/bin/activate
