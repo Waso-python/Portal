@@ -1,15 +1,15 @@
-from datetime import datetime, time
-import random
-import string
+from datetime import datetime
 from django.shortcuts import redirect
 from django.views.generic import ListView
-from .models import (Interesting, Marketplaces, Procedures, Tradeplaces, User, UserOrders,
-                     UserOrgs, UserContracts)
+from .models import Interesting, Marketplaces, Procedures, Tradeplaces,\
+    User, UserOrders, UserOrgs, UserContracts
 from .forms import UserContractsForm, UserOrdersForm, UserOrgsForm
 from .modelforms import ProceduresForm
 from django.core.cache import cache
 from django.core.exceptions import FieldError
 from mainportal.tasks import UpdateBase
+import random
+import string
 import pytz
 
 
@@ -22,7 +22,8 @@ class FullBase(ListView):
         context['page_name'] = 'Все процедуры'
         inter_list = Interesting.objects.filter(user=self.user_id)
         try:
-            context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
+            context['inter_list'] = inter_list[0].procedure.\
+                all().values_list('proc_number', flat=True)
         except IndexError:
             context['inter_list'] = None
         if not context['inter_list']:
@@ -62,7 +63,8 @@ class RecomendBase(ListView):
         context['page_name'] = 'Рекомендованные'
         inter_list = Interesting.objects.filter(user=self.user_id)
         try:
-            context['inter_list'] = inter_list[0].procedure.all().values_list('proc_number', flat=True)
+            context['inter_list'] = inter_list[0].procedure.all().\
+                values_list('proc_number', flat=True)
         except IndexError:
             context['inter_list'] = None
         if not context['inter_list']:
@@ -87,7 +89,8 @@ class InterestingBase(ListView):
         context = super().get_context_data(**kwargs)
         context['page_name'] = 'В Работе'
         try:
-            context['inter_list'] = self.queryset.values_list('proc_number', flat=True)
+            context['inter_list'] = self.queryset.values_list(
+                'proc_number', flat=True)
         except (IndexError, FieldError):
             context['inter_list'] = None
         return context
@@ -96,9 +99,14 @@ class InterestingBase(ListView):
         if not request.user.is_authenticated:
             return redirect('login')
         try:
-            self.queryset = Interesting.objects.get(user=request.user.id).procedure.all().values('id','places__full_name', 'proc_number', 'law__full_name',
-                    'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name',
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name', 'summ_proc')
+            self.queryset = Interesting.objects.get(
+                user=request.user.id).procedure.all().values(
+                    'id', 'places__full_name', 'proc_number', 'law__full_name',
+                    'type_proc__full_name', 'orgs__full_name', 'orgs__inn',
+                    'subject', 'date_start', 'date_end', 'date_proc',
+                    'tradeplace__full_name', 'stage__full_name', 'link',
+                    'created_at', 'deal_count', 'region__full_name',
+                    'summ_proc')
         except Interesting.DoesNotExist as e:
             print('ERROR' + str(e))
             self.queryset = Interesting.objects.none()
@@ -111,7 +119,8 @@ class InterestingBase(ListView):
             return redirect('login')
         # print(request.GET)
         if not int(request.GET.get('value')):
-            Interesting.objects.get(user=request.user.id).procedure.remove(Procedures.objects.get(pk=request.GET.get('pk')))
+            Interesting.objects.get(user=request.user.id).procedure.\
+                remove(Procedures.objects.get(pk=request.GET.get('pk')))
         else:
             try:
                 inter = Interesting.objects.get(user=request.user.id)
@@ -129,20 +138,26 @@ class ProcedureView(ListView, UpdateBase):
     def get_general_context(self, **kwargs):
         context: dict = kwargs['sup']
         try:
-            procedure = Procedures.objects.filter(proc_number=self.proc_number).values('id', 'places__full_name',
-                    'proc_number', 'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'orgs__inn',
-                    'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name',
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name')[0]
+            procedure = Procedures.objects.filter(
+                proc_number=self.proc_number).values(
+                    'id', 'places__full_name', 'proc_number',
+                    'law__full_name', 'type_proc__full_name',
+                    'orgs__full_name', 'orgs__inn',
+                    'subject', 'date_start', 'date_end', 'date_proc',
+                    'tradeplace__full_name',
+                    'stage__full_name', 'link', 'created_at', 'deal_count',
+                    'region__full_name')[0]
             context.update({'procedure': procedure})
         except IndexError as e:
             print('IndexError general_context', e)
         new_orders_form = UserOrdersForm()
         my_org_form = UserOrgsForm()
         my_org_form.fields['my_org'].queryset = self.user_orgs
-        context.update({'page_name': 'Procedure',
-                        'my_org_form': my_org_form,
-                        'new_orders_form': new_orders_form,
-                        'orders': self.user_orders})
+        context.update({
+            'page_name': 'Procedure',
+            'my_org_form': my_org_form,
+            'new_orders_form': new_orders_form,
+            'orders': self.user_orders})
         return context
 
     def get_personal_context(self, **kwargs):
@@ -156,39 +171,44 @@ class ProcedureView(ListView, UpdateBase):
         new_orders_form = UserOrdersForm()
         my_org_form = UserOrgsForm()
         my_org_form.fields['my_org'].queryset = self.user_orgs
-        context.update({'page_name': 'Procedure',
-                        'my_org_form': my_org_form,
-                        'new_orders_form': new_orders_form,
-                        'orders': self.user_orders})
+        context.update({
+            'page_name': 'Procedure',
+            'my_org_form': my_org_form,
+            'new_orders_form': new_orders_form,
+            'orders': self.user_orders})
         return context
 
     def get_context_data(self, **kwargs):
         procedure = Procedures.objects.get(proc_number=self.proc_number)
-        if procedure.personal == False:
-            return self.get_general_context(sup=super().get_context_data(**kwargs))
+        if procedure.personal is False:
+            return self.get_general_context(
+                sup=super().get_context_data(**kwargs))
         else:
-            return self.get_personal_context(sup=super().get_context_data(**kwargs))
+            return self.get_personal_context(
+                sup=super().get_context_data(**kwargs))
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
         self.proc_number = kwargs['proc_num']
         self.user_orgs = UserOrgs.objects.filter(user=request.user.id)
-        self.user_orders = UserOrders.objects.filter(user=request.user.id,
-                                                     procedure__proc_number=kwargs['proc_num']).order_by('-pk')
+        self.user_orders = UserOrders.objects.filter(
+            user=request.user.id,
+            procedure__proc_number=kwargs['proc_num']).order_by('-pk')
         # print(self.user_orders)
         return super().get(self, request, *args, **kwargs)
 
     def new_order(self, request):
         form_orders = UserOrdersForm(request.POST)
         if form_orders.is_valid():
-            new_order = UserOrders(user=User.objects.get(pk=request.user.id),
-                                   procedure=Procedures.objects
-                                   .get(proc_number=self.kwargs['proc_num']),
-                                   my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
-                                   amount=form_orders.cleaned_data['amount'],
-                                   comment=form_orders.cleaned_data['comment'],
-                                   win='win' in request.POST)
+            new_order = UserOrders(
+                user=User.objects.get(pk=request.user.id),
+                procedure=Procedures.objects
+                .get(proc_number=self.kwargs['proc_num']),
+                my_org=UserOrgs.objects.get(pk=int(request.POST['my_org'])),
+                amount=form_orders.cleaned_data['amount'],
+                comment=form_orders.cleaned_data['comment'],
+                win='win' in request.POST)
             new_order.save()
             UserContracts(order=new_order).save()
 
@@ -206,8 +226,9 @@ class ProcedureView(ListView, UpdateBase):
             order.save()
 
     def update_contract(self, request):
-        contract = UserContracts.objects.get(order=UserOrders.objects.get(pk=int(request.POST['update_contract']),
-                                                                          user=request.user.id))
+        contract = UserContracts.objects.get(
+            order=UserOrders.objects.get(pk=int(
+                request.POST['update_contract']), user=request.user.id))
         contract.contract_num = request.POST['contract_num']
         form = UserContractsForm(request.POST)
         if form.is_valid():
@@ -222,9 +243,9 @@ class ProcedureView(ListView, UpdateBase):
         print(self.kwargs['proc_num'])
         if form.is_valid():
             procedure = Procedures.objects.get(proc_number=self.kwargs['proc_num'])
-            procedure.places = self.get_obj(Marketplaces ,form.cleaned_data['places'])
+            procedure.places = self.get_obj(Marketplaces, form.cleaned_data['places'])
             procedure.law = form.cleaned_data['law']
-            procedure.type_proc= form.cleaned_data['type_proc']
+            procedure.type_proc = form.cleaned_data['type_proc']
             procedure.orgs = self.get_org(f"{form.cleaned_data['orgs']}(:{form.cleaned_data['orgs_inn']}")
             procedure.subject = form.cleaned_data['subject']
             procedure.tradeplace = self.get_obj(Tradeplaces, form.cleaned_data['tradeplace'])
@@ -234,20 +255,21 @@ class ProcedureView(ListView, UpdateBase):
             procedure.deal_count = form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0
             procedure.region = form.cleaned_data['region']
             if form.cleaned_data['date_start']:
-                procedure.date_start=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_start'],
-                                        datetime.strptime(f"{form.cleaned_data['hours_start']}:{form.cleaned_data['minutes_start']}",
-                                        '%H:%M').time()))
+                time_str = f"{form.cleaned_data['hours_start']}:{form.cleaned_data['minutes_start']}"
+                procedure.date_start = pytz.timezone('Europe/Moscow').localize(
+                    datetime.combine(form.cleaned_data['date_start'],
+                                     datetime.strptime(time_str, '%H:%M').time()))
             if form.cleaned_data['date_end']:
-                procedure.date_end=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_end'],
-                                        datetime.strptime(f"{form.cleaned_data['hours_end']}:{form.cleaned_data['minutes_end']}",
-                                        '%H:%M').time()))
+                time_str = f"{form.cleaned_data['hours_end']}:{form.cleaned_data['minutes_end']}"
+                procedure.date_end = pytz.timezone('Europe/Moscow').localize(
+                    datetime.combine(form.cleaned_data['date_end'],
+                                     datetime.strptime(time_str, '%H:%M').time()))
             if form.cleaned_data['date_proc']:
-                procedure.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_proc'],
-                                        datetime.strptime(f"{form.cleaned_data['hours_proc']}:{form.cleaned_data['minutes_proc']}",
-                                        '%H:%M').time()))
-        print(f'{procedure.date_start}\n{procedure.date_end}\n{procedure.date_proc}')
+                time_str = f"{form.cleaned_data['hours_proc']}:{form.cleaned_data['minutes_proc']}"
+                procedure.date_proc = pytz.timezone('Europe/Moscow').localize(
+                    datetime.combine(form.cleaned_data['date_proc'],
+                                     datetime.strptime(time_str, '%H:%M').time()))
         procedure.save()
-
 
     def post(self, request, **kwargs):
         # print(self.kwargs['proc_num'])
@@ -287,32 +309,35 @@ class CreateProcedure(ListView, UpdateBase):
         form = ProceduresForm(request.POST)
         if form.is_valid():
             key = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))
-            procedure = Procedures(places=self.get_obj(Marketplaces, form.cleaned_data['places']),
-                                   proc_number=f'{form.cleaned_data["proc_number"]}<-!->{key}',
-                                   law=form.cleaned_data['law'],
-                                   type_proc=form.cleaned_data['type_proc'],
-                                   orgs=self.get_org(f"{form.cleaned_data['orgs']}(:{form.cleaned_data['orgs_inn']}"),
-                                   subject=form.cleaned_data['subject'],
-                                   tradeplace=self.get_obj(Tradeplaces, form.cleaned_data['tradeplace']),
-                                   stage=form.cleaned_data['stage'],
-                                   link=form.cleaned_data['link'],
-                                   summ_proc = form.cleaned_data['summ_proc'],
-                                   deal_count=form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0,
-                                   region=form.cleaned_data['region'],
-                                   personal=True)
+            procedure = Procedures(
+                places=self.get_obj(Marketplaces, form.cleaned_data['places']),
+                proc_number=f'{form.cleaned_data["proc_number"]}<-!->{key}',
+                law=form.cleaned_data['law'],
+                type_proc=form.cleaned_data['type_proc'],
+                orgs=self.get_org(f"{form.cleaned_data['orgs']}(:{form.cleaned_data['orgs_inn']}"),
+                subject=form.cleaned_data['subject'],
+                tradeplace=self.get_obj(Tradeplaces, form.cleaned_data['tradeplace']),
+                stage=form.cleaned_data['stage'],
+                link=form.cleaned_data['link'],
+                summ_proc=form.cleaned_data['summ_proc'],
+                deal_count=form.cleaned_data['deal_count'] if form.cleaned_data['deal_count'] else 0,
+                region=form.cleaned_data['region'],
+                personal=True)
             if form.cleaned_data['date_start']:
-                procedure.date_start=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_start'],
-                                        datetime.strptime(f"{form.cleaned_data['hours_start']}:{form.cleaned_data['minutes_start']}",
-                                        '%H:%M').time()))
+                time_str = f"{form.cleaned_data['hours_start']}:{form.cleaned_data['minutes_start']}"
+                procedure.date_start = pytz.timezone('Europe/Moscow').localize(
+                    datetime.combine(form.cleaned_data['date_start'],
+                                     datetime.strptime(time_str, '%H:%M').time()))
             if form.cleaned_data['date_end']:
-                procedure.date_end=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_end'],
-                                        datetime.strptime(f"{form.cleaned_data['hours_end']}:{form.cleaned_data['minutes_end']}",
-                                        '%H:%M').time()))
+                time_str = f"{form.cleaned_data['hours_end']}:{form.cleaned_data['minutes_end']}"
+                procedure.date_end = pytz.timezone('Europe/Moscow').localize(
+                    datetime.combine(form.cleaned_data['date_end'],
+                                     datetime.strptime(time_str, '%H:%M').time()))
             if form.cleaned_data['date_proc']:
-                procedure.date_proc=pytz.timezone('Europe/Moscow').localize(datetime.combine(form.cleaned_data['date_proc'],
-                                        datetime.strptime(f"{form.cleaned_data['hours_proc']}:{form.cleaned_data['minutes_proc']}",
-                                        '%H:%M').time()))
-            print(f'{procedure.date_start}\n{procedure.date_end}\n{procedure.date_proc}')
+                time_str = f"{form.cleaned_data['hours_proc']}:{form.cleaned_data['minutes_proc']}"
+                procedure.date_proc = pytz.timezone('Europe/Moscow').localize(
+                    datetime.combine(form.cleaned_data['date_proc'],
+                                     datetime.strptime(time_str, '%H:%M').time()))
             procedure.save()
             procedure = Procedures.objects.filter(id=procedure.id)
             try:
@@ -321,4 +346,3 @@ class CreateProcedure(ListView, UpdateBase):
                 inter = Interesting.objects.create(user=User.objects.get(id=request.user.id))
             inter.procedure.add(*procedure)
         return redirect('interesting')
-  
