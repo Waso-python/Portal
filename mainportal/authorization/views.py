@@ -4,7 +4,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from usersProfile.models import ProfileUserModel
-from .forms import *
+from .forms import LoginForm
+
 
 class RegistrationPortal(View):
     template_name = 'authorization/registration.html'
@@ -13,7 +14,7 @@ class RegistrationPortal(View):
     def get(self, request):
         if request.user.is_authenticated:
             return redirect('interesting')
-        return render(request, self.template_name, {'form':self.form})
+        return render(request, self.template_name, {'form': self.form})
 
     def post(self, request):
         if request.method == 'POST':
@@ -21,17 +22,21 @@ class RegistrationPortal(View):
             if self.form.is_valid():
                 # print(self.form.cleaned_data)
                 self.form.save()
-                user = authenticate(request,
-                                    username=self.form.cleaned_data['username'],
-                                    password=self.form.cleaned_data['password1']
-                                    )
+                user = authenticate(
+                    request,
+                    username=self.form.cleaned_data['username'],
+                    password=self.form.cleaned_data['password1'])
                 if user is not None:
-                    ProfileUserModel(user=User.objects.get(username=self.form.cleaned_data['username']), 
-                                     keys={'places':'', 'law':'', 'type_proc':'', 'orgs':'', 'inn':'', 'subject':'', 'region':''}
-                                    ).save()
+                    ProfileUserModel(
+                        user=User.objects.get(
+                        username=self.form.cleaned_data['username']),
+                        keys={'places': '', 'law': '', 'type_proc': '',
+                        'orgs': '', 'inn': '', 'subject': '', 'region': ''}
+                        ).save()
                     login(request, user)
                 return redirect('base')
-        return render(request, self.template_name, {'form':self.form})
+        return render(request, self.template_name, {'form': self.form})
+
 
 class LoginPortal(View):
     template_name = 'authorization/login.html'
@@ -40,24 +45,23 @@ class LoginPortal(View):
     def get(self, request):
         if request.user.is_authenticated:
             return redirect('interesting')
-        return render (request, self.template_name, {'form':self.form})
+        return render(request, self.template_name, {'form': self.form})
 
     def post(self, request):
         self.form = LoginForm(request.POST)
         if self.form.is_valid():
-            user = authenticate(request,
-                                username=self.form.cleaned_data['username'],
-                                password=self.form.cleaned_data['password']
-                                )
+            user = authenticate(
+                request,
+                username=self.form.cleaned_data['username'],
+                password=self.form.cleaned_data['password'])
             if user is not None:
                 login(request, user)
                 return redirect('base')
-        return render(request, self.template_name, {'form':self.form})
-    
+        return render(request, self.template_name, {'form': self.form})
+
 
 class LogoutPortal(View):
 
     def get(self, request):
         logout(request)
         return redirect('login')
-

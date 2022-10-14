@@ -1,11 +1,11 @@
-from indexpage.models import *
+from indexpage.models import Orgs, RawData, Procedures, Marketplaces,\
+    Laws, TypesProc, Tradeplaces, Stages, Region
 from usersProfile.models import ProfileUserModel
-from datetime import datetime
-import pytz
-import time
 from .celery import app
 from django.core.cache import cache
 from datetime import datetime
+import pytz
+import time
 
 
 class UpdateBase():
@@ -21,13 +21,14 @@ class UpdateBase():
             obj = model.objects.create(full_name=value)
         return obj
 
-    def get_org(self, partner, update_name = False):
-        org_inn = ''.join([i if i.isdigit() else '' for i in partner.split(':')[1]])
+    def get_org(self, partner, update_name=False):
+        org_inn = ''.join([i if i.isdigit() else
+                           '' for i in partner.split(':')[1]])
         org_name = partner.split('(')[0]
         try:
             obj: Orgs = Orgs.objects.get(inn=org_inn)
             if update_name and obj.full_name != org_name:
-                obj.full_name=org_name
+                obj.full_name = org_name
                 obj.save()
         except Orgs.DoesNotExist:
             obj = Orgs.objects.create(full_name=org_name, inn=org_inn)
@@ -38,7 +39,8 @@ class UpdateBase():
         data: RawData = data_lst[0]
         data_hash = data.check_hash()
         try:
-            entity: Procedures = Procedures.objects.filter(proc_number=data.num_proc)[0]
+            entity: Procedures = Procedures.objects.\
+                filter(proc_number=data.num_proc)[0]
         except IndexError:
             entity = Procedures()
         if (data_hash == entity.hash):
@@ -50,9 +52,12 @@ class UpdateBase():
         entity.orgs = self.get_org(data.partner, True)
         entity.summ_proc = data.summ_proc
         entity.subject = data.subj_proc
-        entity.date_start = pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
-        entity.date_end = pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
-        entity.date_proc = pytz.timezone('Europe/Moscow').localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
+        entity.date_start = pytz.timezone('Europe/Moscow').\
+            localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
+        entity.date_end = pytz.timezone('Europe/Moscow').\
+            localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
+        entity.date_proc = pytz.timezone('Europe/Moscow').\
+            localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
         entity.tradeplace = self.get_obj(Tradeplaces, 'portal_providers')
         entity.stage = self.get_obj(Stages, data.status)
         entity.link = data.link_proc
@@ -76,9 +81,17 @@ class UpdateBase():
 
 @app.task()
 def cache_base():
-    cache.set('BASE', list(Procedures.objects.filter(date_proc__gte=datetime.today(), personal=False).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 'law__full_name', 
-                    'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name', 'summ_proc')), None)
+    cache.set(
+        'BASE', list(Procedures.objects.filter(
+            date_proc__gte=datetime.today(),
+            personal=False).order_by('-date_proc').values(
+                'id', 'places__full_name', 'proc_number',
+                'law__full_name', 'type_proc__full_name',
+                'orgs__full_name', 'orgs__inn', 'subject',
+                'date_start', 'date_end', 'date_proc',
+                'tradeplace__full_name', 'stage__full_name',
+                'link', 'created_at', 'deal_count',
+                'region__full_name', 'summ_proc')), None)
     users_id = ProfileUserModel.objects.all().values('user')
     for user_id in users_id:
         cache_recomend.delay(user_id['user'])
@@ -86,9 +99,15 @@ def cache_base():
 
 @app.task()
 def cache_old_base():
-    cache.set('OLD_BASE', list(Procedures.objects.filter(personal=False).exclude(date_proc__gte=datetime.today()).order_by('-date_proc').values('id', 'places__full_name', 'proc_number', 
-                    'law__full_name', 'type_proc__full_name', 'orgs__full_name', 'orgs__inn', 'subject', 'date_start', 'date_end', 'date_proc', 'tradeplace__full_name', 
-                    'stage__full_name', 'link', 'created_at', 'deal_count', 'region__full_name', 'summ_proc')), None)
+    cache.set('OLD_BASE', list(Procedures.objects.filter(
+        personal=False).exclude(
+            date_proc__gte=datetime.today()).order_by('-date_proc').values(
+                'id', 'places__full_name', 'proc_number', 'law__full_name',
+                'type_proc__full_name', 'orgs__full_name', 'orgs__inn',
+                'subject', 'date_start', 'date_end', 'date_proc',
+                'tradeplace__full_name', 'stage__full_name', 'link',
+                'created_at', 'deal_count', 'region__full_name',
+                'summ_proc')), None)
 
 
 def find_element(elem: str, keys: str):
@@ -110,7 +129,8 @@ def cache_recomend(user_id):
         if (find_element(elem['subject'], keywords['subject']) and
                 find_element(elem['places__full_name'], keywords['places']) and
                 find_element(elem['law__full_name'], keywords['law']) and
-                find_element(elem['type_proc__full_name'], keywords['type_proc']) and
+                find_element(elem['type_proc__full_name'],
+                             keywords['type_proc']) and
                 find_element(elem['orgs__full_name'], keywords['orgs']) and
                 find_element(elem['orgs__inn'], keywords['inn']) and
                 find_element(elem['region__full_name'], keywords['region'])):

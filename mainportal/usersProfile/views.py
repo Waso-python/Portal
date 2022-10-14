@@ -5,6 +5,7 @@ from .models import ProfileUserModel
 from indexpage.models import UserOrgs, User
 from mainportal.tasks import cache_recomend
 
+
 class ProfileView(ListView):
     template_name: str = 'usersProfile/profile.html'
     queryset = ProfileUserModel
@@ -14,7 +15,7 @@ class ProfileView(ListView):
         form_keys = KeysForm(initial=self.userkeys.get_format())
         form_orgs = UserOrgsForm()
         form_orgs.fields['old'].queryset = self.user_orgs
-        context.update({'form_keys':form_keys, 'form_orgs':form_orgs})
+        context.update({'form_keys': form_keys, 'form_orgs': form_orgs})
         return context
 
     def get(self, request, *args, **kwargs):
@@ -28,24 +29,28 @@ class ProfileView(ListView):
         form = KeysForm(request.POST)
         if form.is_valid():
             userkeys = ProfileUserModel.objects.get(user=request.user.id)
-            userkeys.keys = {'places':form.cleaned_data['places'],
-                             'law':form.cleaned_data['law'],
-                             'type_proc':form.cleaned_data['type_proc'],
-                             'orgs':form.cleaned_data['orgs'],
-                             'inn':form.cleaned_data['inn'],
-                             'subject':form.cleaned_data['subject'],
-                             'region':form.cleaned_data['region']}
+            userkeys.keys = {
+                'places': form.cleaned_data['places'],
+                'law': form.cleaned_data['law'],
+                'type_proc': form.cleaned_data['type_proc'],
+                'orgs': form.cleaned_data['orgs'],
+                'inn': form.cleaned_data['inn'],
+                'subject': form.cleaned_data['subject'],
+                'region': form.cleaned_data['region']}
             userkeys.save()
             cache_recomend.delay(request.user.id)
 
     def change_orgs(self, request):
-        
         if request.POST['form_orgs'] == 'save' and request.POST['new']:
             form = UserOrgsForm(request.POST)
             if form.is_valid():
-                UserOrgs(name=form.cleaned_data['new'], user=User.objects.get(pk=request.user.id)).save()
+                UserOrgs(
+                    name=form.cleaned_data['new'],
+                    user=User.objects.get(pk=request.user.id)).save()
         elif request.POST['form_orgs'] == 'delete' and request.POST['old']:
-            delete_org = UserOrgs.objects.get(pk=int(request.POST['old']), user__pk=request.user.id)
+            delete_org = UserOrgs.objects.get(
+                pk=int(request.POST['old']),
+                user__pk=request.user.id)
             delete_org.delete()
 
     def post(self, request):

@@ -4,12 +4,13 @@ from indexpage.forms import UserOrdersForm, UserContractsForm
 import datetime
 import hashlib
 
+
 class Order(models.Model):
     ACTUAL_ANSWER = (
-		(0, 'не актуально'),
-  		( 1,'актуально')
-	)
-    num_proc = models.CharField(max_length=10,null=False)
+        (0, 'не актуально'),
+        (1, 'актуально')
+    )
+    num_proc = models.CharField(max_length=10, null=False)
     link_proc = models.CharField(max_length=500, null=False)
     partner = models.CharField(max_length=512, null=False)
     summ_proc = models.IntegerField(null=False)
@@ -98,7 +99,8 @@ class DjangoAdminLog(models.Model):
     object_repr = models.CharField(max_length=200)
     action_flag = models.SmallIntegerField()
     change_message = models.TextField()
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
+    content_type = models.ForeignKey(
+        'DjangoContentType', models.DO_NOTHING, blank=True, null=True)
     user = models.ForeignKey(AuthUser, models.DO_NOTHING)
 
     class Meta:
@@ -286,28 +288,29 @@ class Procedures(models.Model):
         return f'{self.id} - {self.proc_number} - {self.subject}'
 
     def get_form_dict(self):
-        return {'places': self.places.full_name,
-                'proc_number': self.personal_proc_num(),
-                'law': self.law,
-                'type_proc': self.type_proc, 
-                'orgs': self.orgs.full_name,
-                'orgs_inn': self.orgs.inn,
-                'subject': self.subject, 
-                'date_start': self.date_start,
-                'hours_start': self.date_start.hour if self.date_start != None else 0,
-                'minutes_start': self.date_start.minute if self.date_start != None else 0,
-                'date_end': self.date_end,
-                'hours_end': self.date_end.hour if self.date_end != None else 0,
-                'minutes_end': self.date_end.minute if self.date_end != None else 0,
-                'date_proc': self.date_proc,
-                'hours_proc': self.date_proc.hour if self.date_proc != None else 0,
-                'minutes_proc': self.date_proc.minute if self.date_proc != None else 0,
-                'summ_proc':self.summ_proc,
-                'tradeplace': self.tradeplace.full_name, 
-                'stage': self.stage,
-                'link': self.link,
-                'deal_count': self.deal_count,
-                'region': self.region}
+        return {
+            'places': self.places.full_name,
+            'proc_number': self.personal_proc_num(),
+            'law': self.law,
+            'type_proc': self.type_proc, 
+            'orgs': self.orgs.full_name,
+            'orgs_inn': self.orgs.inn,
+            'subject': self.subject, 
+            'date_start': self.date_start,
+            'hours_start': self.date_start.hour if self.date_start is not None else 0,
+            'minutes_start': self.date_start.minute if self.date_start is not None else 0,
+            'date_end': self.date_end,
+            'hours_end': self.date_end.hour if self.date_end is not None else 0,
+            'minutes_end': self.date_end.minute if self.date_end is not None else 0,
+            'date_proc': self.date_proc,
+            'hours_proc': self.date_proc.hour if self.date_proc is not None else 0,
+            'minutes_proc': self.date_proc.minute if self.date_proc is not None else 0,
+            'summ_proc': self.summ_proc,
+            'tradeplace': self.tradeplace.full_name, 
+            'stage': self.stage,
+            'link': self.link,
+            'deal_count': self.deal_count,
+            'region': self.region}
 
     def personal_proc_num(self):
         return self.proc_number.split('<-!->')[0]
@@ -379,11 +382,12 @@ class UserOrders(models.Model):
 
     def get_contracts_form(self):
         contract = UserContracts.objects.get(order=self)
-        return UserContractsForm(initial={'contract_num': contract.contract_num,
-                                          'contract_date': contract.contract_date,
-                                          'deadline': contract.deadline,
-                                          'day_to_shipping': contract.day_to_shipping,
-                                          'comment': contract.comment})
+        return UserContractsForm(initial={
+            'contract_num': contract.contract_num,
+            'contract_date': contract.contract_date,
+            'deadline': contract.deadline,
+            'day_to_shipping': contract.day_to_shipping,
+            'comment': contract.comment})
 
     def __str__(self):
         return f'{self.my_org}'

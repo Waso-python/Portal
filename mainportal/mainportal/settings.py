@@ -13,6 +13,7 @@ from .my_set import DB_NAME, HOST_DB, PORT_DB, USER_DB, PASSWORD_DB, SECRET_KEY
 from pathlib import Path
 import os
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -94,10 +95,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': DB_NAME,
-        'USER' : USER_DB,
-        'PASSWORD' : PASSWORD_DB,
-        'HOST' : HOST_DB,
-        'PORT' : PORT_DB,
+        'USER': USER_DB,
+        'PASSWORD': PASSWORD_DB,
+        'HOST': HOST_DB,
+        'PORT': PORT_DB,
     }
 }
 
@@ -120,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-#cron
+# cron
 CRON_CLASSES = [
     "updateb.cron.MyCronJob",
     # ...
@@ -149,17 +150,17 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # celery
-CELERY_BROKER_URL  =  "redis://localhost:6379/0" 
-CELERY_RESULT_BACKEND  =  "redis://localhost:6379/1"
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
 CELERY_BEAT_SCHEDULE = {
         'upd_base-every-120-seconds': {
             'task': 'mainportal.tasks.upd_base',
             'schedule': 120.0,
             'options': {
                 'expires': 15.0,
-            }, 
-    },
-}
+            },
+        },
+    }
 
 CACHES = {
     'default': {
