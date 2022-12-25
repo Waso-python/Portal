@@ -34,37 +34,40 @@ class UpdateBase():
         return obj
 
     def create_update_entity(self, i):
-        data_lst = RawData.objects.filter(num_proc=i[0]).order_by('-pk')
-        data: RawData = data_lst[0]
-        data_hash = data.check_hash()
         try:
-            entity: Procedures = Procedures.objects.\
-                filter(proc_number=data.num_proc)[0]
-        except IndexError:
-            entity = Procedures()
-        if (data_hash == entity.hash):
-            return
-        entity.places = self.get_obj(Marketplaces, 'portal_providers')
-        entity.proc_number = data.num_proc
-        entity.law = self.get_obj(Laws, data.law_proc)
-        entity.type_proc = self.get_obj(TypesProc, data.type_proc)
-        entity.orgs = self.get_org(data.partner, data.partner_inn, True)
-        entity.summ_proc = data.summ_proc
-        entity.subject = data.subj_proc
-        entity.date_start = pytz.timezone('Europe/Moscow').\
-            localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
-        entity.date_end = pytz.timezone('Europe/Moscow').\
-            localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
-        entity.date_proc = pytz.timezone('Europe/Moscow').\
-            localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
-        entity.tradeplace = self.get_obj(Tradeplaces, 'portal_providers')
-        entity.stage = self.get_obj(Stages, data.status)
-        entity.link = data.link_proc
-        entity.deal_count = int(data.count_order) if data.count_order else 0
-        entity.region = self.get_obj(Region, data.region)
-        entity.hash = data_hash
-        entity.save()
-        print(i[0] + ' complete')
+            data_lst = RawData.objects.filter(num_proc=i[0]).order_by('-pk')
+            data: RawData = data_lst[0]
+            data_hash = data.check_hash()
+            try:
+                entity: Procedures = Procedures.objects.filter(
+                    proc_number=data.num_proc)[0]
+            except IndexError:
+                entity = Procedures()
+            if (data_hash == entity.hash):
+                return
+            entity.places = self.get_obj(Marketplaces, 'portal_providers')
+            entity.proc_number = data.num_proc
+            entity.law = self.get_obj(Laws, data.law_proc)
+            entity.type_proc = self.get_obj(TypesProc, data.type_proc)
+            entity.orgs = self.get_org(data.partner, data.partner_inn, True)
+            entity.summ_proc = data.summ_proc
+            entity.subject = data.subj_proc
+            entity.date_start = pytz.timezone('Europe/Moscow').\
+                localize(datetime.strptime(data.start_date, '%d.%m.%Y'))
+            entity.date_end = pytz.timezone('Europe/Moscow').\
+                localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
+            entity.date_proc = pytz.timezone('Europe/Moscow').\
+                localize(datetime.strptime(data.end_date, '%d.%m.%Y %H:%M'))
+            entity.tradeplace = self.get_obj(Tradeplaces, 'portal_providers')
+            entity.stage = self.get_obj(Stages, data.status)
+            entity.link = data.link_proc
+            entity.deal_count = int(data.count_order) if data.count_order else 0
+            entity.region = self.get_obj(Region, data.region)
+            entity.hash = data_hash
+            entity.save()
+            print(i[0] + ' complete')
+        except ValueError as e:
+            print(f'ERROR {e} {type(e)}')
 
     def fillBase(self):
         start_time = time.time()
