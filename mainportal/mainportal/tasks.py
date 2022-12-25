@@ -21,10 +21,9 @@ class UpdateBase():
             obj = model.objects.create(full_name=value)
         return obj
 
-    def get_org(self, partner, update_name=False):
-        org_inn = ''.join([i if i.isdigit() else
-                           '' for i in partner.split(':')[1]])
-        org_name = partner.split('(')[0]
+    def get_org(self, partner, partner_inn, update_name=False):
+        org_inn = partner_inn
+        org_name = partner
         try:
             obj: Orgs = Orgs.objects.get(inn=org_inn)
             if update_name and obj.full_name != org_name:
@@ -49,7 +48,7 @@ class UpdateBase():
         entity.proc_number = data.num_proc
         entity.law = self.get_obj(Laws, data.law_proc)
         entity.type_proc = self.get_obj(TypesProc, data.type_proc)
-        entity.orgs = self.get_org(data.partner, True)
+        entity.orgs = self.get_org(data.partner, data.partner_inn, True)
         entity.summ_proc = data.summ_proc
         entity.subject = data.subj_proc
         entity.date_start = pytz.timezone('Europe/Moscow').\
